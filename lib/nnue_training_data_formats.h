@@ -4329,6 +4329,11 @@ namespace chess
             return m_pieceBB[pc];
         }
 
+        [[nodiscard]] constexpr Bitboard piecesBB(PieceType pt) const
+        {
+            return m_pieceBB[Piece(pt, Color::White)] | m_pieceBB[Piece(pt, Color::Black)];
+        }
+
         [[nodiscard]] constexpr Bitboard piecesBB() const
         {
             Bitboard bb{};
@@ -6867,7 +6872,8 @@ namespace binpack
 
         [[nodiscard]] bool isCapturingMove() const
         {
-            return pos.pieceAt(move.to) != chess::Piece::none() &&
+            using namespace chess;
+            return pos.pieceAt(move.to) != Piece::none() &&
                    pos.pieceAt(move.to).color() != pos.pieceAt(move.from).color(); // Exclude castling
         }
 
@@ -6913,6 +6919,187 @@ namespace binpack
         [[nodiscard]] bool isInCheck() const
         {
             return pos.isCheck();
+        }
+
+        [[nodiscard]] chess::Bitboard attackersTo(chess::Square sq, chess::Bitboard occupied) const
+        {
+            using namespace chess;
+            // En-passant square is not included.
+
+            Bitboard allAttackers = Bitboard::none();
+
+            const Bitboard bishops = pos.piecesBB(PieceType::Bishop);
+            const Bitboard rooks = pos.piecesBB(PieceType::Rook);
+            const Bitboard queens = pos.piecesBB(PieceType::Queen);
+
+            const Bitboard bishopLikePieces = (bishops | queens);
+            const Bitboard bishopAttacks = bb::attacks<PieceType::Bishop>(sq, occupied);
+            allAttackers |= bishopAttacks & bishopLikePieces;
+
+            const Bitboard rookLikePieces = (rooks | queens);
+            const Bitboard rookAttacks = bb::attacks<PieceType::Rook>(sq, occupied);
+            allAttackers |= rookAttacks & rookLikePieces;
+
+            const Bitboard king = pos.piecesBB(PieceType::King);
+            allAttackers |= bb::pseudoAttacks<PieceType::King>(sq) & king;
+
+            const Bitboard knights = pos.piecesBB(PieceType::Knight);
+            allAttackers |= bb::pseudoAttacks<PieceType::Knight>(sq) & knights;
+
+            const Bitboard pawnsw = pos.piecesBB(Piece(PieceType::Pawn, Color::White));
+            const Bitboard pawnsb = pos.piecesBB(Piece(PieceType::Pawn, Color::Black));
+            allAttackers |= bb::pawnAttacks(Bitboard::square(sq), Color::Black) & pawnsw;
+            allAttackers |= bb::pawnAttacks(Bitboard::square(sq), Color::White) & pawnsb;
+
+            return allAttackers;
+        }
+
+        [[nodiscard]] std::pair<chess::Bitboard, chess::Bitboard> pinnersAndBlockers(chess::Bitboard sliders, chess::Square s) const {
+            using namespace chess;
+
+            const Bitboard bishops = pos.piecesBB(PieceType::Bishop);
+            const Bitboard rooks = pos.piecesBB(PieceType::Rook);
+            const Bitboard queens = pos.piecesBB(PieceType::Queen);
+            Bitboard blockers{};
+            Bitboard pinners{};
+
+            // Snipers are sliders that attack 's' when a piece and other snipers are removed
+            Bitboard snipers = (  (bb::attacks<PieceType::Rook>(s, Bitboard::none()) & (queens | rooks))
+                                | (bb::attacks<PieceType::Bishop>(s, Bitboard::none()) & (queens | bishops))) & sliders;
+            Bitboard occupancy = pos.piecesBB() ^ snipers;
+
+            for (Square sniperSq : snipers)
+            {
+                Bitboard b = bb::between(s, sniperSq) & occupancy;
+
+                if (b.any() && !b.moreThanOne())
+                {
+                    blockers |= b;
+                    if ((b & pos.piecesBB(pos.pieceAt(s).color())).any())
+                        pinners |= sniperSq;
+                }
+            }
+            return { pinners, blockers };
+        }
+
+        [[nodiscard]] bool seeGE(int threshold) const
+        {
+            using namespace chess;
+
+            static EnumArray<PieceType, int> PieceValue = [](){
+                EnumArray<PieceType, int> PieceValue;
+                PieceValue[PieceType::Pawn] = 1;
+                PieceValue[PieceType::Knight] = 3;
+                PieceValue[PieceType::Bishop] = 3;
+                PieceValue[PieceType::Rook] = 5;
+                PieceValue[PieceType::Queen] = 9;
+                PieceValue[PieceType::King] = 0;
+                return PieceValue;
+            }();
+            // Only deal with normal moves, assume others pass a simple SEE
+            if (move.type != MoveType::Normal)
+                return 0 >= threshold;
+
+            Square from = move.from, to = move.to;
+
+            int swap = PieceValue[pos.pieceAt(to).type()] - threshold;
+            if (swap < 0)
+                return false;
+
+            swap = PieceValue[pos.pieceAt(from).type()] - swap;
+            if (swap <= 0)
+                return true;
+
+            Bitboard occupied = pos.piecesBB() ^ from ^ to;
+            Color stm = pos.sideToMove();
+            Bitboard attackers = attackersTo(to, occupied);
+            Bitboard stmAttackers, bb;
+            int res = 1;
+
+            EnumArray<Color, Bitboard> blockersForKing;
+            EnumArray<Color, Bitboard> pinners;
+
+            auto [pinnersw, blockersw] = pinnersAndBlockers(pos.piecesBB(Color::Black), pos.kingSquare(Color::White));
+            auto [pinnersb, blockersb] = pinnersAndBlockers(pos.piecesBB(Color::White), pos.kingSquare(Color::Black));
+            blockersForKing[Color::White] = blockersw;
+            blockersForKing[Color::Black] = blockersb;
+            pinners[Color::White] = pinnersw;
+            pinners[Color::Black] = pinnersb;
+
+            while (true)
+            {
+                stm = !stm;
+                attackers &= occupied;
+
+                // If stm has no more attackers then give up: stm loses
+                stmAttackers = attackers & pos.piecesBB(stm);
+                if (stmAttackers.isEmpty())
+                    break;
+
+                // Don't allow pinned pieces to attack as long as there are
+                // pinners on their original square.
+                if ((pinners[!stm] & occupied).any())
+                    stmAttackers &= ~blockersForKing[stm];
+
+                if (stmAttackers.isEmpty())
+                    break;
+
+                res ^= 1;
+
+                // Locate and remove the next least valuable attacker, and add to
+                // the bitboard 'attackers' any X-ray attackers behind it.
+                if ((bb = stmAttackers & pos.piecesBB(PieceType::Pawn)).any())
+                {
+                    if ((swap = PieceValue[PieceType::Pawn] - swap) < res)
+                        break;
+
+                    occupied ^= Bitboard::square(bb.first());
+                    attackers |= bb::attacks<PieceType::Bishop>(to, occupied) & (pos.piecesBB(PieceType::Bishop) | pos.piecesBB(PieceType::Queen));
+                }
+
+                else if ((bb = stmAttackers & pos.piecesBB(PieceType::Knight)).any())
+                {
+                    if ((swap = PieceValue[PieceType::Knight] - swap) < res)
+                        break;
+
+                    occupied ^= Bitboard::square(bb.first());
+                }
+
+                else if ((bb = stmAttackers & pos.piecesBB(PieceType::Bishop)).any())
+                {
+                    if ((swap = PieceValue[PieceType::Bishop] - swap) < res)
+                        break;
+
+                    occupied ^= Bitboard::square(bb.first());
+                    attackers |= bb::attacks<PieceType::Bishop>(to, occupied) & (pos.piecesBB(PieceType::Bishop) | pos.piecesBB(PieceType::Queen));
+                }
+
+                else if ((bb = stmAttackers & pos.piecesBB(PieceType::Rook)).any())
+                {
+                    if ((swap = PieceValue[PieceType::Rook] - swap) < res)
+                        break;
+
+                    occupied ^= Bitboard::square(bb.first());
+                    attackers |= bb::attacks<PieceType::Rook>(to, occupied) & (pos.piecesBB(PieceType::Rook) | pos.piecesBB(PieceType::Queen));
+                }
+
+                else if ((bb = stmAttackers & pos.piecesBB(PieceType::Queen)).any())
+                {
+                    if ((swap = PieceValue[PieceType::Queen] - swap) < res)
+                        break;
+
+                    occupied ^= Bitboard::square(bb.first());
+                    attackers |=  (bb::attacks<PieceType::Bishop>(to, occupied) & (pos.piecesBB(PieceType::Bishop) | pos.piecesBB(PieceType::Queen)))
+                                | (bb::attacks<PieceType::Rook>(to, occupied) & (pos.piecesBB(PieceType::Rook) | pos.piecesBB(PieceType::Queen)));
+                }
+
+                else // KING
+                     // If we "capture" with the king but opponent still has attackers,
+                     // reverse the result.
+                    return (attackers & ~pos.piecesBB(stm)).any() ? res ^ 1 : res;
+            }
+
+            return bool(res);
         }
     };
 
