@@ -873,6 +873,10 @@ std::function<bool(const TrainingDataEntry&)> make_skip_predicate(bool filtered,
             if (e.score == VALUE_NONE)
                 return true;
 
+            // skip all early opening positions
+            if (e.ply <= 16)
+                return true;
+
             if (random_fen_skipping && do_skip())
                 return true;
 
