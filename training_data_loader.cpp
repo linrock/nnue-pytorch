@@ -882,6 +882,10 @@ std::function<bool(const TrainingDataEntry&)> make_skip_predicate(bool filtered,
             if (wld_filtered && do_wld_skip())
                 return true;
 
+            const int pc = e.pos.piecesBB().count();
+            if (pc <= 5)
+                return true;
+
             constexpr bool do_debug_print = false;
             if (do_debug_print) {
                 if (uint64_t(piece_count_history_all_total) % 10000 == 0) {
@@ -892,7 +896,6 @@ std::function<bool(const TrainingDataEntry&)> make_skip_predicate(bool filtered,
                 }
             }
 
-            const int pc = e.pos.piecesBB().count();
             piece_count_history_all[pc] += 1;
             piece_count_history_all_total += 1;
 
