@@ -858,7 +858,7 @@ std::function<bool(const TrainingDataEntry&)> make_skip_predicate(bool filtered,
                 return true;
 
             const int pc = e.pos.piecesBB().count();
-            if (pc <= 5)
+            if (pc <= 6)
                 return true;
 
             return false;
