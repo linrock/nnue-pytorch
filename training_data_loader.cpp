@@ -873,6 +873,10 @@ std::function<bool(const TrainingDataEntry&)> make_skip_predicate(bool filtered,
             if (e.score == VALUE_NONE)
                 return true;
 
+            // skip all early opening positions
+            if (e.ply <= 28)
+                return true;
+
             // skip all positions with castling rights
             if (e.pos.castlingRights() != CastlingRights::None)
                 return true;
