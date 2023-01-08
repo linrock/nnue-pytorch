@@ -849,6 +849,8 @@ std::function<bool(const TrainingDataEntry&)> make_skip_predicate(bool filtered,
             static thread_local double piece_count_history_passed[33] = {0};
             static thread_local double piece_count_history_all_total = 0;
             static thread_local double piece_count_history_passed_total = 0;
+            static thread_local double piece_count_castling_skipped_total = 0;
+            static thread_local double piece_count_no_castling_not_skipped_total = 0;
 
             // max skipping rate
             static constexpr double max_skipping_rate = 10.0;
@@ -874,8 +876,12 @@ std::function<bool(const TrainingDataEntry&)> make_skip_predicate(bool filtered,
                 return true;
 
             // skip all positions with castling rights
-            if (e.pos.castlingRights() != CastlingRights::None)
+            if (e.pos.castlingRights() != CastlingRights::None) {
+                piece_count_castling_skipped_total += 1;
                 return true;
+            } else {
+                piece_count_no_castling_not_skipped_total += 1;
+            }
 
             if (random_fen_skipping && do_skip())
                 return true;
@@ -886,13 +892,11 @@ std::function<bool(const TrainingDataEntry&)> make_skip_predicate(bool filtered,
             if (wld_filtered && do_wld_skip())
                 return true;
 
-            constexpr bool do_debug_print = false;
+            constexpr bool do_debug_print = true;
             if (do_debug_print) {
-                if (uint64_t(piece_count_history_all_total) % 10000 == 0) {
-                    std::cout << "Total : " << piece_count_history_all_total << '\n';
-                    std::cout << "Passed: " << piece_count_history_passed_total << '\n';
-                    for (int i = 0; i < 33; ++i)
-                        std::cout << i << ' ' << piece_count_history_passed[i] << '\n';
+                if (uint64_t(piece_count_history_all_total) % 1000000 == 0) {
+                    std::cout << "Castling skipped         : " << piece_count_castling_skipped_total << '\n';
+                    std::cout << "No castling, not skipped : " << piece_count_no_castling_not_skipped_total << '\n';
                 }
             }
 
