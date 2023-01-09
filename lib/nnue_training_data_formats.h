@@ -6868,7 +6868,7 @@ namespace binpack
 
            // tweak wdl model, deviating from fishtest results,
            // but yielding improved training results
-           b *= 1.5;
+           // b *= 1.5;
 
            // Transform eval to centipawns with limited range
            double x = std::clamp(double(100 * score) / 208, -2000.0, 2000.0);
