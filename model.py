@@ -291,7 +291,7 @@ class NNUE(pl.LightningModule):
     # They should be also clipped accordingly in the serializer.
     self._clip_weights()
 
-    us, them, white_indices, white_values, black_indices, black_values, outcome, score, psqt_indices, layer_stack_indices = batch
+    us, them, white_indices, white_values, black_indices, black_values, outcome, score, psqt_indices, layer_stack_indices, piece_counts = batch
 
     # convert the network and search scores to an estimate match result
     # based on the win_rate_model, with scalings and offsets optimized
