@@ -309,7 +309,14 @@ class NNUE(pl.LightningModule):
     pf = 0.5 * (1.0 + p.sigmoid() - pm.sigmoid())
 
     t = outcome
-    actual_lambda = self.start_lambda + (self.end_lambda - self.start_lambda) * (self.current_epoch / self.max_epoch)
+    end_lambda = self.end_lambda
+    # psqt_indices[i] = (e.pos.piecesBB().count() - 1) / 4;
+    if psqt_indices < 2:  # piece count < 9
+        end_lambda -= 0.1
+    elif psqt_indices > 6:  # piece count > 25
+        end_lambda += 0.1
+    actual_lambda = self.start_lambda + (end_lambda - self.start_lambda) * (self.current_epoch / self.max_epoch)
+
     pt = pf * actual_lambda + t * (1.0 - actual_lambda)
 
     loss = torch.pow(torch.abs(pt - qf), 2.5).mean()
