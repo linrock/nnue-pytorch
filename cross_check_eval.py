@@ -16,9 +16,9 @@ def make_fen_batch_provider(data_path, batch_size):
     return nnue_dataset.FenBatchProvider(data_path, True, 1, batch_size, False, 10)
 
 def eval_model_batch(model, batch):
-    us, them, white_indices, white_values, black_indices, black_values, outcome, score, psqt_indices, layer_stack_indices = batch.contents.get_tensors('cuda')
+    us, them, white_indices, white_values, black_indices, black_values, outcome, score, psqt_indices, layer_stack_indices, piece_counts = batch.contents.get_tensors('cuda')
 
-    evals = [v.item() for v in model.forward(us, them, white_indices, white_values, black_indices, black_values, psqt_indices, layer_stack_indices) * 600.0]
+    evals = [v.item() for v in model.forward(us, them, white_indices, white_values, black_indices, black_values, psqt_indices, layer_stack_indices, piece_counts) * 600.0]
     for i in range(len(evals)):
         if them[i] > 0.5:
             evals[i] = -evals[i]

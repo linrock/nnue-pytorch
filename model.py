@@ -262,7 +262,7 @@ class NNUE(pl.LightningModule):
     else:
       raise Exception('Cannot change feature set from {} to {}.'.format(self.feature_set.name, new_feature_set.name))
 
-  def forward(self, us, them, white_indices, white_values, black_indices, black_values, psqt_indices, layer_stack_indices):
+  def forward(self, us, them, white_indices, white_values, black_indices, black_values, psqt_indices, layer_stack_indices, piece_counts):
     wp, bp = self.input(white_indices, white_values, black_indices, black_values)
     w, wpsqt = torch.split(wp, L1, dim=1)
     b, bpsqt = torch.split(bp, L1, dim=1)
@@ -299,7 +299,7 @@ class NNUE(pl.LightningModule):
     out_scaling = 380
     offset = 270
 
-    scorenet = self(us, them, white_indices, white_values, black_indices, black_values, psqt_indices, layer_stack_indices) * self.nnue2score
+    scorenet = self(us, them, white_indices, white_values, black_indices, black_values, psqt_indices, layer_stack_indices, piece_counts) * self.nnue2score
     q  = ( scorenet - offset) / in_scaling  # used to compute the chance of a win
     qm = (-scorenet - offset) / in_scaling  # used to compute the chance of a loss
     qf = 0.5 * (1.0 + q.sigmoid() - qm.sigmoid())  # estimated match result (using win, loss and draw probs).
