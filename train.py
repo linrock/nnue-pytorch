@@ -37,7 +37,9 @@ def main():
   parser = argparse.ArgumentParser(description="Trains the network.")
   parser.add_argument("train", help="Training data (.bin or .binpack)")
   parser.add_argument("val", help="Validation data (.bin or .binpack)")
-  parser = pl.Trainer.add_argparse_args(parser)
+  parser.add_argument("--default-root-dir", default=1.0, type=str, dest='default_root_dir', help="Root directory of an experiment.")
+  parser.add_argument("--num-epochs", default=800, type=int, dest="num_epochs", help="Number of epochs to train for.")
+  parser.add_argument("--gpus", default="0", type=str, dest="gpus", help="A single GPU ID or a list of GPU IDs to use for training. Note that a single run still uses a single GPU.")
   parser.add_argument("--lambda", default=1.0, type=float, dest='lambda_', help="lambda=1.0 = train on evaluations, lambda=0.0 = train on game results, interpolates between (default=1.0).")
   parser.add_argument("--start-lambda", default=None, type=float, dest='start_lambda', help="lambda to use at first epoch.")
   parser.add_argument("--end-lambda", default=None, type=float, dest='end_lambda', help="lambda to use at last epoch.")
@@ -73,7 +75,7 @@ def main():
 
   start_lambda = args.start_lambda or args.lambda_
   end_lambda = args.end_lambda or args.lambda_
-  max_epoch = args.max_epochs or 800
+  max_epoch = args.num_epochs or 800
   if args.resume_from_model is None:
     nnue = M.NNUE(
       feature_set=feature_set,
@@ -126,7 +128,12 @@ def main():
 
   tb_logger = pl_loggers.TensorBoardLogger(logdir)
   checkpoint_callback = pl.callbacks.ModelCheckpoint(save_last=args.save_last_network, every_n_epochs=args.network_save_period, save_top_k=-1)
-  trainer = pl.Trainer.from_argparse_args(args, callbacks=[checkpoint_callback], logger=tb_logger)
+  trainer = pl.Trainer(
+    logger=tb_logger,
+    callbacks=[checkpoint_callback],
+    max_epochs=args.num_epochs,
+    default_root_dir=args.default_root_dir
+  )
 
   main_device = trainer.root_device if trainer.strategy.root_device.index is None else 'cuda:' + str(trainer.strategy.root_device.index)
 

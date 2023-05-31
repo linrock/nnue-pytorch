@@ -2,6 +2,7 @@ import numpy as np
 import ctypes
 import torch
 import os
+import platform
 import sys
 import glob
 from torch.utils.data import Dataset
@@ -11,7 +12,11 @@ if not local_dllpath:
     print('Cannot find data_loader shared library.')
     sys.exit(1)
 dllpath = os.path.abspath(local_dllpath[0])
-dll = ctypes.cdll.LoadLibrary(dllpath)
+
+if platform.system() == 'Windows' :
+    dll = ctypes.CDLL(dllpath, winmode=0)
+else :
+    dll = ctypes.CDLL(dllpath)
 
 class SparseBatch(ctypes.Structure):
     _fields_ = [
