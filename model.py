@@ -74,6 +74,18 @@ class LayerStacks(nn.Module):
     self.output.bias = nn.Parameter(output_bias)
 
   def forward(self, x, ls_indices):
+    with torch.no_grad():
+      zeroer = torch.ones([L2+1, L1])
+      sz = L1//4
+      l2_halfway = (L2+1)//2
+      zeroer[:l2_halfway , :sz] = 0
+      zeroer[:l2_halfway , sz*2:sz*3] = 0
+      zeroer[l2_halfway:, sz:sz*2] = 0
+      zeroer[l2_halfway:, sz*3:] = 0
+      l1_weight_reshaped = torch.reshape(self.l1.weight, [count,  L2 + 1, 2 * L1 // 2])
+      self.l1.weight.copy_(torch.reshape(l1_weight_reshaped * zeroer, self.l1.weight.shape))
+      self.l1_fact.weight.copy_(self.l1_fact.weight * zeroer)
+
     # Precompute and cache the offset for gathers
     if self.idx_offset == None or self.idx_offset.shape[0] != x.shape[0]:
       self.idx_offset = torch.arange(0,x.shape[0]*self.count,self.count, device=ls_indices.device)
