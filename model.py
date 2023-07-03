@@ -82,7 +82,7 @@ class LayerStacks(nn.Module):
       zeroer[:l2_halfway , sz*2:sz*3] = 0
       zeroer[l2_halfway:, sz:sz*2] = 0
       zeroer[l2_halfway:, sz*3:] = 0
-      l1_weight_reshaped = torch.reshape(self.l1.weight, [count,  L2 + 1, 2 * L1 // 2])
+      l1_weight_reshaped = torch.reshape(self.l1.weight, [self.count,  L2 + 1, 2 * L1 // 2])
       self.l1.weight.copy_(torch.reshape(l1_weight_reshaped * zeroer, self.l1.weight.shape))
       self.l1_fact.weight.copy_(self.l1_fact.weight * zeroer)
 
