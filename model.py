@@ -75,7 +75,7 @@ class LayerStacks(nn.Module):
 
   def forward(self, x, ls_indices):
     with torch.no_grad():
-      zeroer = torch.ones([L2+1, L1])
+      zeroer = torch.ones([L2+1, L1], device=ls_indices.device)
       sz = L1//4
       l2_halfway = (L2+1)//2
       zeroer[:l2_halfway , :sz] = 0
