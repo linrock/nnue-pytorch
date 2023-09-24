@@ -7,7 +7,7 @@ import copy
 from feature_transformer import DoubleFeatureTransformerSlice
 
 # 3 layer fully connected network
-L1 = 2048
+L1 = 2560
 L2 = 15
 L3 = 32
 
@@ -312,7 +312,7 @@ class NNUE(pl.LightningModule):
     actual_lambda = self.start_lambda + (self.end_lambda - self.start_lambda) * (self.current_epoch / self.max_epoch)
     pt = pf * actual_lambda + t * (1.0 - actual_lambda)
 
-    loss = torch.pow(torch.abs(pt - qf), 2.5).mean()
+    loss = torch.pow(torch.abs(pt - qf), 2.3).mean()
 
     self.log(loss_type, loss)
 
