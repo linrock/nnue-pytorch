@@ -215,7 +215,10 @@ class NNUEReader():
     self.read_int32(VERSION) # version
     self.read_int32(fc_hash ^ feature_set.hash ^ (M.L1*2))
     desc_len = self.read_int32()
-    self.description = self.f.read(desc_len).decode('utf-8')
+    try:
+        self.description = self.f.read(desc_len).decode('utf-8')
+    except:
+        pass
 
   def read_leb_128_array(self, dtype, shape):
     l = self.read_int32()
