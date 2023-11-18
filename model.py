@@ -295,8 +295,8 @@ class NNUE(pl.LightningModule):
 
     # convert the network and search scores to an estimate match result
     # based on the win_rate_model, with scalings and offsets optimized
-    in_scaling = 340
-    out_scaling = 380
+    in_scaling = 380
+    out_scaling = 420
     offset = 270
 
     scorenet = self(us, them, white_indices, white_values, black_indices, black_values, psqt_indices, layer_stack_indices) * self.nnue2score
@@ -312,7 +312,7 @@ class NNUE(pl.LightningModule):
     actual_lambda = self.start_lambda + (self.end_lambda - self.start_lambda) * (self.current_epoch / self.max_epoch)
     pt = pf * actual_lambda + t * (1.0 - actual_lambda)
 
-    loss = torch.pow(torch.abs(pt - qf), 2.5).mean()
+    loss = torch.pow(torch.abs(pt - qf), 2.3).mean()
 
     self.log(loss_type, loss)
 
