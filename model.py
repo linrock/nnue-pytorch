@@ -295,7 +295,7 @@ class NNUE(pl.LightningModule):
 
     # convert the network and search scores to an estimate match result
     # based on the win_rate_model, with scalings and offsets optimized
-    in_scaling = 340
+    in_scaling = 300
     out_scaling = 380
     offset = 270
 
