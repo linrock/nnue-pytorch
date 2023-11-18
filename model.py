@@ -296,7 +296,7 @@ class NNUE(pl.LightningModule):
     # convert the network and search scores to an estimate match result
     # based on the win_rate_model, with scalings and offsets optimized
     in_scaling = 340
-    out_scaling = 380
+    out_scaling = 450
     offset = 270
 
     scorenet = self(us, them, white_indices, white_values, black_indices, black_values, psqt_indices, layer_stack_indices) * self.nnue2score
