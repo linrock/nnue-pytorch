@@ -866,10 +866,6 @@ std::function<bool(const TrainingDataEntry&)> make_skip_predicate(bool filtered,
                 return distrib(prng);
             };
 
-            auto do_filter = [&]() {
-                return e.isCapturingMove(); // || e.isInCheck());
-            };
-
             // Allow for predermined filtering without the need to remove positions from the dataset.
             if (e.score == VALUE_NONE)
                 return true;
@@ -878,9 +874,6 @@ std::function<bool(const TrainingDataEntry&)> make_skip_predicate(bool filtered,
                 return true;
 
             if (random_fen_skipping && do_skip())
-                return true;
-
-            if (filtered && do_filter())
                 return true;
 
             if (wld_filtered && do_wld_skip())
