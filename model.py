@@ -9,7 +9,7 @@ from feature_transformer import DoubleFeatureTransformerSlice
 # 3 layer fully connected network
 L1 = 256
 L2 = 15
-L3 = 32
+L3 = 16
 
 def coalesce_ft_weights(model, layer):
   weight = layer.weight.data
