@@ -94,7 +94,9 @@ class LayerStacks(nn.Module):
 
     l2s_ = self.l2(l1x_).reshape((-1, self.count, L3))
     l2c_ = l2s_.view(-1, L3)[indices]
-    l2x_ = torch.clamp(l2c_, 0.0, 1.0)
+    # l2x_ = torch.clamp(l2c_, 0.0, 1.0)
+    # multiply sqr crelu result by (127/128) to match quantized version
+    l2x_ = torch.clamp(torch.pow(l2c_, 2.0) * (127/128), 0.0, 1.0)
 
     l3s_ = self.output(l2x_).reshape((-1, self.count, 1))
     l3c_ = l3s_.view(-1, 1)[indices]
