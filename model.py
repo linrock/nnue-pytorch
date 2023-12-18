@@ -357,11 +357,13 @@ class NNUE(pl.LightningModule):
     # Gradient localisation appears slightly harmful.
     # optimizer = ranger.Ranger(train_params, betas=(.9, 0.999), eps=1.0e-7, gc_loc=False, use_gc=False)
 
+    # epoch_size: 100,000,000
+    # batch_size: 16,384
     optimizer = ranger21.Ranger21(train_params,
       lr=1.0, betas=(.9, 0.999), eps=1.0e-7,
       using_gc=False, using_normgc=False,
       weight_decay=0.0,
-      num_batches_per_epoch=int(self.epoch_size / self.batch_size), num_epochs=self.max_epochs,
+      num_batches_per_epoch=int(100_000_000 / 16384), num_epochs=self.max_epochs,
       warmdown_active=False, use_warmup=False,
       use_adaptive_gradient_clipping=False,
       softplus=False,
