@@ -351,7 +351,7 @@ class NNUE(pl.LightningModule):
       lr=1.0, betas=(.9, 0.999), eps=1.0e-7,
       using_gc=False, using_normgc=False,
       weight_decay=0.0,
-      num_batches_per_epoch=int(100_000_000 / 16384), num_epochs=self.max_epochs,
+      num_batches_per_epoch=int(100_000_000 / 16384), num_epochs=self.max_epoch,
       warmdown_active=False, use_warmup=False,
       use_adaptive_gradient_clipping=False,
       softplus=False,
