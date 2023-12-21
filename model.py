@@ -7,7 +7,7 @@ import copy
 from feature_transformer import DoubleFeatureTransformerSlice
 
 # 3 layer fully connected network
-L1 = 2560
+L1 = 128
 L2 = 16
 L3 = 32
 
