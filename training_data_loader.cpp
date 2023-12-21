@@ -886,6 +886,9 @@ std::function<bool(const TrainingDataEntry&)> make_skip_predicate(bool filtered,
             if (wld_filtered && do_wld_skip())
                 return true;
 
+            if (e.pos.simple_eval() > 1250)
+                return true;
+
             constexpr bool do_debug_print = false;
             if (do_debug_print) {
                 if (uint64_t(piece_count_history_all_total) % 10000 == 0) {
