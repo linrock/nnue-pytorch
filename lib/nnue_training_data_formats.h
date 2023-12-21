@@ -5083,11 +5083,11 @@ namespace chess
     [[nodiscard]] inline std::uint16_t Position::simple_eval() const
     {
         return std::abs(
-             208 * (m_pieceCount[whitePawn]   - m_pieceCount[blackPawn])
-          +  781 * (m_pieceCount[whiteKnight] - m_pieceCount[blackKnight])
-          +  825 * (m_pieceCount[whiteBishop] - m_pieceCount[blackBishop])
-          + 1276 * (m_pieceCount[whiteRook]   - m_pieceCount[blackRook])
-          + 2538 * (m_pieceCount[whiteQueen]  - m_pieceCount[blackQueen])
+             208 * (pieceCount(whitePawn)   - pieceCount(blackPawn))
+          +  781 * (pieceCount(whiteKnight) - pieceCount(blackKnight))
+          +  825 * (pieceCount(whiteBishop) - pieceCount(blackBishop))
+          + 1276 * (pieceCount(whiteRook)   - pieceCount(blackRook))
+          + 2538 * (pieceCount(whiteQueen)  - pieceCount(blackQueen))
         );
     }
 
