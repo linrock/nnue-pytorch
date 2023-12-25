@@ -855,7 +855,10 @@ std::function<bool(const TrainingDataEntry&)> make_skip_predicate(bool filtered,
             static constexpr double max_skipping_rate = 10.0;
 
             auto do_wld_skip = [&]() {
-                std::bernoulli_distribution distrib(1.0 - e.score_result_prob() * e.score_result_prob());
+                int result_prob = e.score_result_prob();
+                std::bernoulli_distribution distrib(
+                  result_prob < 0.2 ? 1.0 : (result_prob > 0.8 ? 0.0 : (1.0 - result_prob))
+                );
                 auto& prng = rng::get_thread_local_rng();
                 return distrib(prng);
             };
