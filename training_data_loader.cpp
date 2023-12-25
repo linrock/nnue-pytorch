@@ -8,7 +8,7 @@
 #include <thread>
 #include <deque>
 #include <random>
-#include <math>
+#include <cmath>
 
 #include "lib/nnue_training_data_formats.h"
 #include "lib/nnue_training_data_stream.h"
