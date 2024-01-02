@@ -287,7 +287,7 @@ class NNUE(pl.LightningModule):
 
     return x
 
-  @torch.compile
+  # @torch.compile
   def step_(self, batch, batch_idx, loss_type):
     # We clip weights at the start of each step. This means that after
     # the last step the weights might be outside of the desired range.
@@ -312,7 +312,7 @@ class NNUE(pl.LightningModule):
     pf = 0.5 * (1.0 + p.sigmoid() - pm.sigmoid())
 
     t = outcome
-    actual_lambda = self.start_lambda + (self.end_lambda - self.start_lambda) * (self.current_epoch / self.max_epoch)
+    actual_lambda = self.start_lambda + (self.end_lambda - self.start_lambda) * ((self.current_epoch or 0) / (self.max_epoch or 800))
     pt = pf * actual_lambda + t * (1.0 - actual_lambda)
 
     loss = torch.pow(torch.abs(pt - qf), 2.5).mean()
