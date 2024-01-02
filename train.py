@@ -43,7 +43,7 @@ def main():
   parser.add_argument("--default-root-dir", default="/tmp", type=str, dest='default_root_dir', help="Root directory of an experiment.")
   parser.add_argument("--max-epoch", default=800, type=int, dest="max_epoch", help="Number of epochs to train for.")
   parser.add_argument("--gpus", default="0", type=str, dest="gpus", help="A single GPU ID or a list of GPU IDs to use for training. Note that a single run still uses a single GPU.")
-  parser.add_argument("--resume-from-checkpoint", default=None, dest='resume_from_checkpoint', help="Initializes training using the weights from the given .pt model")
+  # parser.add_argument("--resume-from-checkpoint", default=None, dest='resume_from_checkpoint', help="Initializes training using the weights from the given .pt model")
 
   parser.add_argument("--validation-data", type=str, action='append', nargs='+', dest='validation_datasets', help="Validation data to use for validation instead of the training data.")
   parser.add_argument("--lambda", default=1.0, type=float, dest='lambda_', help="lambda=1.0 = train on evaluations, lambda=0.0 = train on game results, interpolates between (default=1.0).")
@@ -154,7 +154,7 @@ def main():
     logger=tb_logger,
     max_epochs=max_epoch,
     default_root_dir=args.default_root_dir,
-    resume_from_checkpoint=args.resume_from_checkpoint,
+    # resume_from_checkpoint=args.resume_from_checkpoint,
   )
 
   main_device = trainer.strategy.root_device if trainer.strategy.root_device.index is None else 'cuda:' + str(trainer.strategy.root_device.index)
