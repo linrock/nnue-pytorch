@@ -728,7 +728,7 @@ class TrainingRun(Thread):
         args = [
             f'--num-workers={self._num_data_loader_threads}',
             f'--threads={self._num_pytorch_threads}',
-            f'--max_epoch={self._num_epochs}',
+            f'--max-epoch={self._num_epochs}',
             f'--batch-size={self._batch_size}',
             f'--random-fen-skipping={self._random_fen_skipping}',
             f'--early-fen-skipping={self._early_fen_skipping}',
@@ -742,7 +742,7 @@ class TrainingRun(Thread):
             f'--seed={self._seed}',
             f'--epoch-size={self._epoch_size}',
             f'--validation-size={self._validation_size}',
-            f'--default_root_dir={self._root_dir}',
+            f'--default-root-dir={self._root_dir}',
         ]
 
         if self._smart_fen_skipping:
