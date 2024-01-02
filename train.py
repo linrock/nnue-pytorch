@@ -154,6 +154,8 @@ def main():
     logger=tb_logger,
     max_epochs=max_epoch,
     default_root_dir=args.default_root_dir,
+    devices=args.gpus.split(","),
+    accelerator="gpu"
     # resume_from_checkpoint=args.resume_from_checkpoint,
   )
 
