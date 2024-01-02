@@ -287,7 +287,7 @@ class NNUE(pl.LightningModule):
 
     return x
 
-  @torch.compile(fullgraph=True, mode="max-autotune") # , options={"triton.cudagraphs": True})
+  # @torch.compile(fullgraph=True, mode="max-autotune") # , options={"triton.cudagraphs": True})
   def step_(self, batch, batch_idx, loss_type):
     # We clip weights at the start of each step. This means that after
     # the last step the weights might be outside of the desired range.
