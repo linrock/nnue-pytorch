@@ -40,8 +40,8 @@ def main():
   parser = argparse.ArgumentParser(description="Trains the network.")
   parser.add_argument("datasets", action='append', nargs='+', help="Training datasets (.binpack). Interleaved at chunk level if multiple specified. Same data is used for training and validation if not validation data is specified.")
   # parser = pl.Trainer.add_argparse_args(parser)
-  parser.add_argument("--default-root-dir", default=1.0, type=str, dest='default_root_dir', help="Root directory of an experiment.")
-  parser.add_argument("--num-epochs", default=800, type=int, dest="num_epochs", help="Number of epochs to train for.")
+  parser.add_argument("--default-root-dir", default="/tmp", type=str, dest='default_root_dir', help="Root directory of an experiment.")
+  parser.add_argument("--max-epoch", default=800, type=int, dest="max_epoch", help="Number of epochs to train for.")
   parser.add_argument("--gpus", default="0", type=str, dest="gpus", help="A single GPU ID or a list of GPU IDs to use for training. Note that a single run still uses a single GPU.")
 
   parser.add_argument("--validation-data", type=str, action='append', nargs='+', dest='validation_datasets', help="Validation data to use for validation instead of the training data.")
@@ -94,7 +94,7 @@ def main():
 
   start_lambda = args.start_lambda or args.lambda_
   end_lambda = args.end_lambda or args.lambda_
-  max_epoch = args.max_epochs or 800
+  max_epoch = args.max_epoch or 800
   if args.resume_from_model is None:
     nnue = M.NNUE(
       feature_set=feature_set,

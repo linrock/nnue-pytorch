@@ -1978,7 +1978,8 @@ def parse_cli_args():
         help='The feature set to use. If not specified then will be inferred from the cloned nnue-pytorch repo.'
     )
     parser.add_argument(
-        '--max_epoch', '--num-epochs', # --max_epoch kept to match pytorch-lightning's name
+        # --max_epoch kept to match pytorch-lightning's name
+        '--max_epoch', '--num-epochs', '--max-epoch',
         default=400,
         type=int,
         metavar='INTEGER',
