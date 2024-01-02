@@ -763,7 +763,7 @@ class TrainingRun(Thread):
         if self._resume_training:
             ckpt_path = find_latest_checkpoint(self._root_dir)
             if ckpt_path:
-                args.append(f'--resume_from_checkpoint={ckpt_path}')
+                args.append(f'--resume-from-checkpoint={ckpt_path}')
                 resumed = True
 
         if self._start_from_model and not resumed:
