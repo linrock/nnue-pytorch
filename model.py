@@ -73,6 +73,7 @@ class LayerStacks(nn.Module):
     self.output.weight = nn.Parameter(output_weight)
     self.output.bias = nn.Parameter(output_bias)
 
+  @torch.compile
   def forward(self, x, ls_indices):
     # Precompute and cache the offset for gathers
     if self.idx_offset == None or self.idx_offset.shape[0] != x.shape[0]:
