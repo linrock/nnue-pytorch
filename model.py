@@ -74,6 +74,7 @@ class LayerStacks(nn.Module):
     self.output.weight = nn.Parameter(output_weight)
     self.output.bias = nn.Parameter(output_bias)
 
+  @torch.compile
   def forward(self, x, ls_indices):
     # Precompute and cache the offset for gathers
     if self.idx_offset == None or self.idx_offset.shape[0] != x.shape[0]:
@@ -263,6 +264,7 @@ class NNUE(pl.LightningModule):
     else:
       raise Exception('Cannot change feature set from {} to {}.'.format(self.feature_set.name, new_feature_set.name))
 
+  @torch.compile
   def forward(self, us, them, white_indices, white_values, black_indices, black_values, psqt_indices, layer_stack_indices):
     wp, bp = self.input(white_indices, white_values, black_indices, black_values)
     w, wpsqt = torch.split(wp, L1, dim=1)
@@ -347,15 +349,22 @@ class NNUE(pl.LightningModule):
 
     # epoch_size: 100,000,000
     # batch_size: 16,384
-    optimizer = ranger21.Ranger21(train_params,
-      lr=1.0, betas=(.9, 0.999), eps=1.0e-7,
-      using_gc=False, using_normgc=False,
+    optimizer = ranger21.Ranger21(
+      train_params,
+      lr=1.0,
+      betas=(.9, 0.999),
+      eps=1.0e-7,
+      using_gc=False,
+      using_normgc=False,
       weight_decay=0.0,
-      num_batches_per_epoch=int(100_000_000 / 16384), num_epochs=self.max_epoch,
-      warmdown_active=False, use_warmup=False,
+      num_batches_per_epoch=int(100_000_000 / 16_384),
+      num_epochs=self.max_epoch,
+      warmdown_active=False,
+      use_warmup=False,
       use_adaptive_gradient_clipping=False,
       softplus=False,
-      pnm_momentum_factor=0.0)
+      pnm_momentum_factor=0.0
+    )
 
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=1, gamma=self.gamma)
     return [optimizer], [scheduler]
