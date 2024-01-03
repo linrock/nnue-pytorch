@@ -5,6 +5,7 @@ import torch.nn.functional as F
 import pytorch_lightning as pl
 import copy
 from feature_transformer import DoubleFeatureTransformerSlice
+from quantmoid import quantmoid4
 
 # 3 layer fully connected network
 L1 = 2560
@@ -55,6 +56,8 @@ class LayerStacks(nn.Module):
       l1_fact_weight.fill_(0.0)
       l1_fact_bias.fill_(0.0)
       output_bias.fill_(0.0)
+      l1_bias -= 0.8
+      l2_bias -= 0.8
 
       for i in range(1, self.count):
         # Force all layer stacks to be initialized in the same way.
@@ -90,11 +93,13 @@ class LayerStacks(nn.Module):
     l1f_, l1f_out = l1f_.split(L2, dim=1)
     l1x_ = l1c_ + l1f_
     # multiply sqr crelu result by (127/128) to match quantized version
-    l1x_ = torch.clamp(torch.cat([torch.pow(l1x_, 2.0) * (127/128), l1x_], dim=1), 0.0, 1.0)
+    # l1x_ = torch.clamp(torch.cat([torch.pow(l1x_, 2.0) * (127/128), l1x_], dim=1), 0.0, 1.0)
+    l1x_ = quantmoid4(l1c_ + l1f_)
 
     l2s_ = self.l2(l1x_).reshape((-1, self.count, L3))
     l2c_ = l2s_.view(-1, L3)[indices]
-    l2x_ = torch.clamp(l2c_, 0.0, 1.0)
+    # l2x_ = torch.clamp(l2c_, 0.0, 1.0)
+    l2x_ = quantmoid4(l2c_)
 
     l3s_ = self.output(l2x_).reshape((-1, self.count, 1))
     l3c_ = l3s_.view(-1, 1)[indices]
@@ -182,6 +187,7 @@ class NNUE(pl.LightningModule):
     # 1.0 / kPonanzaConstant
     scale = 1 / self.nnue2score
     with torch.no_grad():
+      input_bias -= 0.8
       initial_values = self.feature_set.get_initial_psqt_features()
       assert len(initial_values) == self.feature_set.num_features
       for i in range(self.num_psqt_buckets):
@@ -267,7 +273,8 @@ class NNUE(pl.LightningModule):
     w, wpsqt = torch.split(wp, L1, dim=1)
     b, bpsqt = torch.split(bp, L1, dim=1)
     l0_ = (us * torch.cat([w, b], dim=1)) + (them * torch.cat([b, w], dim=1))
-    l0_ = torch.clamp(l0_, 0.0, 1.0)
+    # l0_ = torch.clamp(l0_, 0.0, 1.0)
+    l0_ = quantmoid4(l0_)
 
     l0_s = torch.split(l0_, L1 // 2, dim=1)
     l0_s1 = [l0_s[0] * l0_s[1], l0_s[2] * l0_s[3]]
