@@ -5,6 +5,8 @@ import torch.nn.functional as F
 import pytorch_lightning as pl
 import copy
 from feature_transformer import DoubleFeatureTransformerSlice
+
+# https://github.com/Sopel97/nnue-pytorch/commit/0dce02d191a29c4d8e5ce132bcdefc3d5dcf5005
 from quantmoid import quantmoid4
 
 # 3 layer fully connected network
@@ -93,8 +95,7 @@ class LayerStacks(nn.Module):
     l1f_, l1f_out = l1f_.split(L2, dim=1)
     l1x_ = l1c_ + l1f_
     # multiply sqr crelu result by (127/128) to match quantized version
-    # l1x_ = torch.clamp(torch.cat([torch.pow(l1x_, 2.0) * (127/128), l1x_], dim=1), 0.0, 1.0)
-    l1x_ = quantmoid4(l1c_ + l1f_)
+    l1x_ = torch.clamp(torch.cat([torch.pow(l1x_, 2.0) * (127/128), quantmoid4(l1x_)], dim=1), 0.0, 1.0)
 
     l2s_ = self.l2(l1x_).reshape((-1, self.count, L3))
     l2c_ = l2s_.view(-1, L3)[indices]
