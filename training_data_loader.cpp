@@ -883,7 +883,7 @@ std::function<bool(const TrainingDataEntry&)> make_skip_predicate(bool filtered,
             if (filtered && do_filter())
                 return true;
 
-            if (wld_filtered && e.score_result_prob() <= 0.04)
+            if (wld_filtered && e.score_result_prob() <= 0.08)
                 return true;
 
             if (wld_filtered && do_wld_skip())
