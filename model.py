@@ -7,7 +7,7 @@ import pytorch_lightning as pl
 import copy
 from feature_transformer import DoubleFeatureTransformerSlice
 
-torch.set_float32_matmul_precision("high")
+torch.set_float32_matmul_precision("medium")
 
 # 3 layer fully connected network
 L1 = 3072
