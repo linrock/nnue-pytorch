@@ -360,6 +360,18 @@ struct FeatureSet
     }
 };
 
+constexpr int bucketNo[33] = {
+    0,
+    0, 0, 0, 0, 0, 0, 0,  //  1   2   3   4   5   6   7
+    1, 1, 1, 1,           //  8   9  10  11
+    2, 2, 2, 2,           // 12  13  14  15
+    3, 3, 3,              // 16  17  18
+    4, 4, 4,              // 19  20  21
+    5, 5, 5,              // 22  23  24
+    6, 6, 6, 6,           // 25  26  27  28
+    7, 7, 7, 7            // 29  30  31  32
+};
+
 struct SparseBatch
 {
     static constexpr bool IS_BATCH = true;
@@ -435,7 +447,8 @@ private:
         is_white[i] = static_cast<float>(e.pos.sideToMove() == Color::White);
         outcome[i] = (e.result + 1.0f) / 2.0f;
         score[i] = e.score;
-        psqt_indices[i] = (e.pos.piecesBB().count() - 1) / 4;
+        // psqt_indices[i] = (e.pos.piecesBB().count() - 1) / 4;
+        psqt_indices[i] = bucketNo[e.pos.piecesBB().count()];
         layer_stack_indices[i] = psqt_indices[i];
         fill_features(FeatureSet<Ts...>{}, i, e);
     }
