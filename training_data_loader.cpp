@@ -878,6 +878,17 @@ std::function<bool(const TrainingDataEntry&)> make_skip_predicate(bool filtered,
             if (e.ply <= early_fen_skipping)
                 return true;
 
+            // skipping based on simple eval thresholds
+            const int pc = e.pos.piecesBB().count();
+            const int simple_eval_abs = e.pos.simple_eval();
+
+            if (pc >= 16 && simple_eval_abs < 750)
+                return true;
+
+            if (pc < 16 && simple_eval_abs < 950 || simple_eval_abs > 6000)
+                return true;
+
+
             if (random_fen_skipping && do_skip())
                 return true;
 
@@ -885,15 +896,6 @@ std::function<bool(const TrainingDataEntry&)> make_skip_predicate(bool filtered,
                 return true;
 
             if (wld_filtered && do_wld_skip())
-                return true;
-
-            const int pc = e.pos.piecesBB().count();
-            const int simple_eval_abs = e.pos.simple_eval();
-
-            if (pc >= 16 && simple_eval_abs < 750)
-                return true;
-
-            if (pc < 16 && simple_eval_abs < 950)
                 return true;
 
             constexpr bool do_debug_print = false;
