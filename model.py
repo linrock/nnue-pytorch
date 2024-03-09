@@ -198,23 +198,11 @@ class NNUE(pl.LightningModule):
     self.input.weight = nn.Parameter(input_weights)
     self.input.bias = nn.Parameter(input_bias)
 
-  @torch.compile
-  def _p_data_fp32_from_virtual(min_weight, max_weight, p_data_fp32, virtual_params)
-    xs = p_data_fp32.shape[0] // virtual_params.shape[0]
-    ys = p_data_fp32.shape[1] // virtual_params.shape[1]
-    expanded_virtual_layer = virtual_params.repeat(xs, ys)
-    if min_weight is not None:
-      min_weight_t = p_data_fp32.new_full(p_data_fp32.shape, min_weight) - expanded_virtual_layer
-      p_data_fp32 = torch.max(p_data_fp32, min_weight_t)
-    if max_weight is not None:
-      max_weight_t = p_data_fp32.new_full(p_data_fp32.shape, max_weight) - expanded_virtual_layer
-      p_data_fp32 = torch.min(p_data_fp32, max_weight_t)
-    return p_data_fp32
-
   '''
   Clips the weights of the model based on the min/max values allowed
   by the quantization scheme.
   '''
+  @torch.compile
   def _clip_weights(self):
     for group in self.weight_clipping:
       for p in group['params']:
@@ -224,7 +212,16 @@ class NNUE(pl.LightningModule):
           max_weight = group['max_weight']
           if 'virtual_params' in group:
             virtual_params = group['virtual_params']
-            p_data_fp32 = self._p_data_fp32_from_virtual(min_weight, max_weight, p_data_fp32, virtual_params)
+            xs = p_data_fp32.shape[0] // virtual_params.shape[0]
+            ys = p_data_fp32.shape[1] // virtual_params.shape[1]
+            expanded_virtual_layer = virtual_params.repeat(xs, ys)
+            if min_weight is not None:
+              min_weight_t = p_data_fp32.new_full(p_data_fp32.shape, min_weight) - expanded_virtual_layer
+              p_data_fp32 = torch.max(p_data_fp32, min_weight_t)
+            if max_weight is not None:
+              max_weight_t = p_data_fp32.new_full(p_data_fp32.shape, max_weight) - expanded_virtual_layer
+              p_data_fp32 = torch.min(p_data_fp32, max_weight_t)
+            return p_data_fp32
           else:
             if min_weight is not None and max_weight is not None:
               p_data_fp32.clamp_(min_weight, max_weight)
