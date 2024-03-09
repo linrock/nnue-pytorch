@@ -885,7 +885,7 @@ std::function<bool(const TrainingDataEntry&)> make_skip_predicate(bool filtered,
             if (pc >= 16 && simple_eval_abs < 750)
                 return true;
 
-            if (pc < 16 && simple_eval_abs < 950 || simple_eval_abs > 6000)
+            if (pc < 16 && (simple_eval_abs < 950 || simple_eval_abs > 6000))
                 return true;
 
 
@@ -908,7 +908,6 @@ std::function<bool(const TrainingDataEntry&)> make_skip_predicate(bool filtered,
                 }
             }
 
-            const int pc = e.pos.piecesBB().count();
             piece_count_history_all[pc] += 1;
             piece_count_history_all_total += 1;
 
