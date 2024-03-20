@@ -266,8 +266,7 @@ class NNUE(pl.LightningModule):
       raise Exception('Cannot change feature set from {} to {}.'.format(self.feature_set.name, new_feature_set.name))
 
   @torch.compile
-  def forward(self, us, them, white_indices, white_values, black_indices, black_values, psqt_indices, layer_stack_indices):
-    wp, bp = self.input(white_indices, white_values, black_indices, black_values)
+  def _forward_inner(self, us, them, wp, bp, psqt_indices, layer_stack_indices):
     w, wpsqt = torch.split(wp, L1, dim=1)
     b, bpsqt = torch.split(bp, L1, dim=1)
     l0_ = (us * torch.cat([w, b], dim=1)) + (them * torch.cat([b, w], dim=1))
@@ -288,6 +287,10 @@ class NNUE(pl.LightningModule):
     x = self.layer_stacks(l0_, layer_stack_indices) + (wpsqt - bpsqt) * (us - 0.5)
 
     return x
+
+  def forward(self, us, them, white_indices, white_values, black_indices, black_values, psqt_indices, layer_stack_indices):
+    wp, bp = self.input(white_indices, white_values, black_indices, black_values)
+    return self._forward_inner(us, them, wp, bp, psqt_indices, layer_stack_indices)
 
   @torch.compile
   def calc_loss(self, batch):
