@@ -202,6 +202,7 @@ class NNUE(pl.LightningModule):
   Clips the weights of the model based on the min/max values allowed
   by the quantization scheme.
   '''
+  @torch.compile
   def _clip_weights(self):
     for group in self.weight_clipping:
       for p in group['params']:
