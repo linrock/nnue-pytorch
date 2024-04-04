@@ -7,6 +7,7 @@ import pytorch_lightning as pl
 import copy
 from feature_transformer import DoubleFeatureTransformerSlice
 
+
 torch.set_float32_matmul_precision("high")
 
 # 3 layer fully connected network
@@ -267,8 +268,7 @@ class NNUE(pl.LightningModule):
       raise Exception('Cannot change feature set from {} to {}.'.format(self.feature_set.name, new_feature_set.name))
 
   @torch.compile
-  def forward(self, us, them, white_indices, white_values, black_indices, black_values, psqt_indices, layer_stack_indices):
-    wp, bp = self.input(white_indices, white_values, black_indices, black_values)
+  def _forward_inner(self, us, them, wp, bp, psqt_indices, layer_stack_indices):
     w, wpsqt = torch.split(wp, L1, dim=1)
     b, bpsqt = torch.split(bp, L1, dim=1)
     l0_ = (us * torch.cat([w, b], dim=1)) + (them * torch.cat([b, w], dim=1))
@@ -290,9 +290,12 @@ class NNUE(pl.LightningModule):
 
     return x
 
+  def forward(self, us, them, white_indices, white_values, black_indices, black_values, psqt_indices, layer_stack_indices):
+    wp, bp = self.input(white_indices, white_values, black_indices, black_values)
+    return self._forward_inner(us, them, wp, bp, psqt_indices, layer_stack_indices)
+
   @torch.compile
-  def calc_loss(self, batch):
-    us, them, white_indices, white_values, black_indices, black_values, outcome, score, psqt_indices, layer_stack_indices = batch
+  def calc_loss(self, scorenet, outcome, score):
 
     # convert the network and search scores to an estimate match result
     # based on the win_rate_model, with scalings and offsets optimized
@@ -300,7 +303,6 @@ class NNUE(pl.LightningModule):
     out_scaling = 380
     offset = 270
 
-    scorenet = self(us, them, white_indices, white_values, black_indices, black_values, psqt_indices, layer_stack_indices) * self.nnue2score
     q  = ( scorenet - offset) / in_scaling  # used to compute the chance of a win
     qm = (-scorenet - offset) / in_scaling  # used to compute the chance of a loss
     qf = 0.5 * (1.0 + q.sigmoid() - qm.sigmoid())  # estimated match result (using win, loss and draw probs).
@@ -324,7 +326,9 @@ class NNUE(pl.LightningModule):
     # the last step the weights might be outside of the desired range.
     # They should be also clipped accordingly in the serializer.
     self._clip_weights()
-    loss = self.calc_loss(batch)
+    us, them, white_indices, white_values, black_indices, black_values, outcome, score, psqt_indices, layer_stack_indices = batch
+    scorenet = self(us, them, white_indices, white_values, black_indices, black_values, psqt_indices, layer_stack_indices) * self.nnue2score
+    loss = self.calc_loss(scorenet, outcome, score)
     self.log(loss_type, loss)
     return loss
 
