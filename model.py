@@ -11,7 +11,7 @@ torch.set_float32_matmul_precision("high")
 
 # 3 layer fully connected network
 L1 = 128
-L2 = 15
+L2 = 31
 L3 = 64
 
 def coalesce_ft_weights(model, layer):
