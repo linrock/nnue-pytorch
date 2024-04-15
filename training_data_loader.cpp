@@ -880,7 +880,7 @@ std::function<bool(const TrainingDataEntry&)> make_skip_predicate(bool filtered,
             if (e.pos.piecesBB().count() <= 3)
                 return true;
 
-            if (e.pos.simple_eval() < 1000)
+            if (e.pos.simple_eval() < 1200)
                 return true;
 
             if (random_fen_skipping && do_skip())
