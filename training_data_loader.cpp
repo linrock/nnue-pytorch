@@ -877,6 +877,12 @@ std::function<bool(const TrainingDataEntry&)> make_skip_predicate(bool filtered,
             if (e.ply <= early_fen_skipping)
                 return true;
 
+            if (e.pos.piecesBB().count() <= 3)
+                return true;
+
+            if (e.pos.simple_eval() < 1000)
+                return true;
+
             if (random_fen_skipping && do_skip())
                 return true;
 
@@ -884,9 +890,6 @@ std::function<bool(const TrainingDataEntry&)> make_skip_predicate(bool filtered,
                 return true;
 
             if (wld_filtered && do_wld_skip())
-                return true;
-
-            if (e.pos.simple_eval() < 1000)
                 return true;
 
             constexpr bool do_debug_print = false;
