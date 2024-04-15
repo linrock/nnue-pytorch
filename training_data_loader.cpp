@@ -877,12 +877,18 @@ std::function<bool(const TrainingDataEntry&)> make_skip_predicate(bool filtered,
             if (e.ply <= early_fen_skipping)
                 return true;
 
-            if (e.pos.piecesBB().count() <= 3)
+            // Skipping based on piece counts
+            const int pieceCount = e.pos.piecesBB().count();
+            if (pieceCount <= 3)
                 return true;
 
-            if (e.pos.simple_eval() < 1200)
+            if (pieceCount <  16 && e.pos.simple_eval() < 1200)
                 return true;
 
+            if (pieceCount >= 16 && e.pos.simple_eval() < 800)
+                return true;
+
+            // Probabalistic skipping
             if (random_fen_skipping && do_skip())
                 return true;
 
