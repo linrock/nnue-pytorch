@@ -436,7 +436,7 @@ private:
         outcome[i] = (e.result + 1.0f) / 2.0f;
         score[i] = e.score;
         // psqt_indices[i] = (e.pos.piecesBB().count() - 1) / 4;
-        psqt_indices[i] = ((pos.piecesBB() & (pos.piecesBB(Piece(PieceType::Pawn, Color::White)) | pos.piecesBB(Piece(PieceType::Pawn, Color::Black)))) - 1) / 2;
+        psqt_indices[i] = ((e.pos.piecesBB() & (e.pos.piecesBB(Piece(PieceType::Pawn, Color::White)) | e.pos.piecesBB(Piece(PieceType::Pawn, Color::Black)))) - 1) / 2;
 
         layer_stack_indices[i] = psqt_indices[i];
         fill_features(FeatureSet<Ts...>{}, i, e);
