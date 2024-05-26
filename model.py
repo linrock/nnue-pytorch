@@ -153,10 +153,12 @@ class NNUE(pl.LightningModule):
     self.nnue2score = 600.0
     self.weight_scale_hidden = 64.0
     self.weight_scale_out = 16.0
-    self.quantized_one = 127.0
+    self.ft_quantized_one = 255.0
+    self.hidden_quantized_one = 127.0
 
-    max_hidden_weight = self.quantized_one / self.weight_scale_hidden
-    max_out_weight = (self.quantized_one * self.quantized_one) / (self.nnue2score * self.weight_scale_out)
+    max_hidden_weight = self.hidden_quantized_one / self.weight_scale_hidden
+    max_out_weight = (self.hidden_quantized_one * self.hidden_quantized_one) / (self.nnue2score * self.weight_scale_out)
+
     self.weight_clipping = [
       {'params' : [self.layer_stacks.l1.weight], 'min_weight' : -max_hidden_weight, 'max_weight' : max_hidden_weight, 'virtual_params' : self.layer_stacks.l1_fact.weight },
       {'params' : [self.layer_stacks.l2.weight], 'min_weight' : -max_hidden_weight, 'max_weight' : max_hidden_weight },
@@ -276,9 +278,9 @@ class NNUE(pl.LightningModule):
 
     l0_s = torch.split(l0_, L1 // 2, dim=1)
     l0_s1 = [l0_s[0] * l0_s[1], l0_s[2] * l0_s[3]]
-    # We multiply by 127/128 because in the quantized network 1.0 is represented by 127
-    # and it's more efficient to divide by 128 instead.
-    l0_ = torch.cat(l0_s1, dim=1) * (127/128)
+    # We multiply by 255/256 because in the quantized network 1.0 is represented by 255
+    # and it's more efficient to divide by 256 instead.
+    l0_ = torch.cat(l0_s1, dim=1) * (255/256)
 
     psqt_indices_unsq = psqt_indices.unsqueeze(dim=1)
     wpsqt = wpsqt.gather(1, psqt_indices_unsq)
