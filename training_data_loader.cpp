@@ -886,7 +886,7 @@ std::function<bool(const TrainingDataEntry&)> make_skip_predicate(bool filtered,
             if (wld_filtered && do_wld_skip())
                 return true;
 
-            if (e.pos.simple_eval() < 900)
+            if (e.pos.simple_eval() < 850)
                 return true;
 
             constexpr bool do_debug_print = false;
