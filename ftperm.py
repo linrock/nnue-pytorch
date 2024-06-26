@@ -385,13 +385,13 @@ def forward_ft(model, us, them, white_indices, white_values, black_indices, blac
     w, wpsqt = torch.split(wp, M.L1, dim=1)
     b, bpsqt = torch.split(bp, M.L1, dim=1)
     l0_ = (us * torch.cat([w, b], dim=1)) + (them * torch.cat([b, w], dim=1))
-    l0_ = torch.clamp(l0_, 0.0, 127.0)
+    l0_ = torch.clamp(l0_, 0.0, 254.0)
 
     l0_s = torch.split(l0_, M.L1 // 2, dim=1)
     l0_s1 = [l0_s[0] * l0_s[1], l0_s[2] * l0_s[3]]
-    # We multiply by 127/128 because in the quantized network 1.0 is represented by 127
-    # and it's more efficient to divide by 128 instead.
-    l0_ = torch.cat(l0_s1, dim=1) * (1/128)
+    # We multiply by 254/256 because in the quantized network 1.0 is represented by 254
+    # and it's more efficient to divide by 256 instead.
+    l0_ = torch.cat(l0_s1, dim=1) * (1/256)
 
     return l0_.round()
 

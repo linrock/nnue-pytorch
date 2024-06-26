@@ -93,8 +93,8 @@ class LayerStacks(nn.Module):
     l1c_, l1c_out = l1c_.split(L2, dim=1)
     l1f_, l1f_out = l1f_.split(L2, dim=1)
     l1x_ = l1c_ + l1f_
-    # multiply sqr crelu result by (127/128) to match quantized version
-    l1x_ = torch.clamp(torch.cat([torch.pow(l1x_, 2.0) * (127/128), l1x_], dim=1), 0.0, 1.0)
+    # multiply sqr crelu result by (254/256) to match quantized version
+    l1x_ = torch.clamp(torch.cat([torch.pow(l1x_, 2.0) * (254/256), l1x_], dim=1), 0.0, 1.0)
 
     l2s_ = self.l2(l1x_).reshape((-1, self.count, L3))
     l2c_ = l2s_.view(-1, L3)[indices]
@@ -276,9 +276,9 @@ class NNUE(pl.LightningModule):
 
     l0_s = torch.split(l0_, L1 // 2, dim=1)
     l0_s1 = [l0_s[0] * l0_s[1], l0_s[2] * l0_s[3]]
-    # We multiply by 127/128 because in the quantized network 1.0 is represented by 127
-    # and it's more efficient to divide by 128 instead.
-    l0_ = torch.cat(l0_s1, dim=1) * (127/128)
+    # We multiply by 254/256 because in the quantized network 1.0 is represented by 254
+    # and it's more efficient to divide by 256 instead.
+    l0_ = torch.cat(l0_s1, dim=1) * (254/256)
 
     psqt_indices_unsq = psqt_indices.unsqueeze(dim=1)
     wpsqt = wpsqt.gather(1, psqt_indices_unsq)
