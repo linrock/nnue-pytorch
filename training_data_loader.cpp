@@ -867,8 +867,7 @@ std::function<bool(const TrainingDataEntry&)> make_skip_predicate(bool filtered,
             };
 
             auto do_filter = [&]() {
-                // need to skip BM captures with score == 0 for compatibility with min-v1 binpacks
-                return e.isInCheck() || (e.isCapturingMove() && (e.score == 0 || e.seeGE(0)));
+                return e.isInCheck() || e.isCapturingMove();
             };
 
             // Allow for predermined filtering without the need to remove positions from the dataset.
