@@ -31,7 +31,7 @@ def modify_nnue(nnue_filename, spsa_csv_filename):
     description = "Network trained with the https://github.com/official-stockfish/nnue-pytorch trainer."
     writer = NNUEWriter(model, description, ft_compression="leb128")
 
-    sha256_nnue_output_filename = f"nn-{get_sha256_nnue_hash(writer.buf)[:12]}.nnue"
+    sha256_nnue_output_filename = f"nn-{get_sha256_hash(writer.buf)[:12]}.nnue"
 
     if Path(sha256_nnue_output_filename).exists():
         print(f"{sha256_nnue_output_filename} already exists. doing nothing")
