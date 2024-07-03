@@ -1,17 +1,14 @@
 import argparse
 import features
-import math
 import model as M
 import struct
 import torch
-import io
 from torch import nn
-import pytorch_lightning as pl
-from torch.utils.data import DataLoader
 from functools import reduce
 import operator
 import numpy as np
 from numba import njit
+
 
 def ascii_hist(name, x, bins=6):
   N,X = np.histogram(x, bins=bins)
