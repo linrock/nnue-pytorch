@@ -21,8 +21,8 @@ def modify_nnue(nnue_filename, spsa_page_url):
     response = requests.get(spsa_page_url)
     soup = BeautifulSoup(response.text, "html.parser")
 
-    spsa_status_el = soup.find("div", {"class": "elo-results-top"})
-    for row in spsa_status_el.text.strip().split("\n"):
+    spsa_status_div = soup.find("div", {"class": "elo-results-top"})
+    for row in spsa_status_div.text.strip().split("\n"):
         if row.strip():
             print(" ", row.strip())
 
@@ -38,6 +38,10 @@ def modify_nnue(nnue_filename, spsa_page_url):
     for row in params_rows:
         td = row.find_all("td")
         param_name = td[0].text.strip()
+
+        # value = float(td[2].text)  # start values
+        # print(param_name, value)
+
         value = float(td[1].text)
 
         if param_name.startswith("twoW"):
