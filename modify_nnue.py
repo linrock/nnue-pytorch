@@ -19,6 +19,9 @@ def modify_nnue(nnue_filename, spsa_csv_filename):
         reader = NNUEReader(f, feature_set)
         model = reader.model
 
+    num_modified_two_w = 0
+    num_modified_ft_b = 0
+
     # twoW[3][0][0],-26,twoW[3][0][1],-36,twoW[3][0][2],-60, ...
     with open(spsa_csv_filename, "r") as f:
         csv_stream = f.read().strip().split(",")
@@ -32,8 +35,15 @@ def modify_nnue(nnue_filename, spsa_csv_filename):
                 value = int(entry)
                 if param_type == "twoW":
                     model.layer_stacks.l2.weight.data[32*int(bucket) + int(idx1), int(idx2)] = float(value) / 64
+                    num_modified_two_w += 1
                 elif param_type == "ftB":
                     model.input.bias.data[int(idx)] = float(value) / 254
+                    num_modified_ft_b += 1
+
+    if num_modified_ft_b > 0:
+        print(f"# modified ft biases: {num_modified_ft_b}")
+    if num_modified_two_w > 0:
+        print(f"# modified L2 weights: {num_modified_two_w}")
 
     description = "Network trained with the https://github.com/official-stockfish/nnue-pytorch trainer."
     writer = NNUEWriter(model, description, ft_compression="leb128")
