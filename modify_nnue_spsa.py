@@ -39,7 +39,7 @@ def modify_nnue(nnue_filename, spsa_page_url):
         td = row.find_all("td")
         param_name = td[0].text.strip()
 
-        # value = float(td[2].text)  # start values
+        start_value = int(td[2].text)
         # print(param_name, value)
 
         value = float(td[1].text)
@@ -50,6 +50,8 @@ def modify_nnue(nnue_filename, spsa_page_url):
 
         elif param_name.startswith("ftB"):
             param_type, idx = param_name.replace("[", " ").replace("]", " ").split()
+            if int(model.input.bias.data[int(idx)] * 254) != start_value:
+                print(f"warning: model.input.bias[{int(idx)}] != {start_value}")
             model.input.bias.data[int(idx)] = value / 254
 
     description = "Network trained with the https://github.com/official-stockfish/nnue-pytorch trainer."
