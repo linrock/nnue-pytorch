@@ -35,24 +35,32 @@ def modify_nnue(nnue_filename, spsa_page_url):
         reader = NNUEReader(f, feature_set)
         model = reader.model
 
+    num_ft_b = 0
+    num_ft_b_modified = 0
+
     for row in params_rows:
         td = row.find_all("td")
         param_name = td[0].text.strip()
 
-        start_value = int(td[2].text)
-        # print(param_name, value)
-
         value = float(td[1].text)
+        start_value = int(td[2].text)
 
         if param_name.startswith("twoW"):
             param_type, bucket, idx1, idx2 = param_name.replace("[", " ").replace("]", " ").split()
             model.layer_stacks.l2.weight.data[32*int(bucket) + int(idx1), int(idx2)] = value / 64
 
-        elif param_name.startswith("ftB"):
+        if param_name.startswith("ftB"):
+            num_ft_b += 1
             param_type, idx = param_name.replace("[", " ").replace("]", " ").split()
             if int(model.input.bias.data[int(idx)] * 254) != start_value:
                 print(f"warning: model.input.bias[{int(idx)}] != {start_value}")
-            model.input.bias.data[int(idx)] = value / 254
+            if round(value) != start_value:
+                num_ft_b_modified += 1
+                model.input.bias.data[int(idx)] = value / 254
+
+    if num_ft_b > 0:
+        print(f"  # ft bias params:   {num_ft_b}")
+        print(f"  # ft bias modified: {num_ft_b_modified}")
 
     description = "Network trained with the https://github.com/official-stockfish/nnue-pytorch trainer."
     writer = NNUEWriter(model, description, ft_compression="leb128")
