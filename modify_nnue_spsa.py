@@ -96,6 +96,7 @@ def modify_nnue(nnue_filename, spsa_page_url):
         print(f"{sha256_nnue_output_filename} already exists. doing nothing")
     else:
         print(f"saving modified nnue to {sha256_nnue_output_filename}")
+        print(os.path.abspath(sha256_nnue_output_filename))
         with open(sha256_nnue_output_filename, "wb") as f:
               f.write(writer.buf)
 

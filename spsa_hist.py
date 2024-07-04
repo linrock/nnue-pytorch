@@ -5,7 +5,6 @@ import sys
 
 from bs4 import BeautifulSoup
 import matplotlib.pyplot as plt
-import numpy as np
 import requests
 
 
@@ -49,6 +48,7 @@ def view_spsa_histogram(spsa_page_url):
     axes[1].set_ylabel('frequency')
 
     plt.show()
+
 
 if __name__ == "__main__":
     if len(sys.argv) != 2:
