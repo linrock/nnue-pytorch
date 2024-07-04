@@ -19,14 +19,21 @@ def modify_nnue(nnue_filename, spsa_csv_filename):
         reader = NNUEReader(f, feature_set)
         model = reader.model
 
+    # twoW[3][0][0],-26,twoW[3][0][1],-36,twoW[3][0][2],-60, ...
     with open(spsa_csv_filename, "r") as f:
         csv_stream = f.read().strip().split(",")
+        param_type = None
         for entry in csv_stream:
-            if "W" in entry:
-                layer, bucket, idx1, idx2 = entry.replace("[", " ").replace("]", " ").split()
+            if "twoW" in entry:
+                param_type, bucket, idx1, idx2 = entry.replace("[", " ").replace("]", " ").split()
+            elif "ftB" in entry:
+                param_type, idx = entry.replace("[", " ").replace("]", " ").split()
             else:
                 value = int(entry)
-                model.layer_stacks.l2.weight.data[32*int(bucket) + int(idx1), int(idx2)] = float(value) / 64
+                if param_type == "twoW":
+                    model.layer_stacks.l2.weight.data[32*int(bucket) + int(idx1), int(idx2)] = float(value) / 64
+                elif param_type == "ftB":
+                    model.input.bias.data[idx] = float(value) / 254
 
     description = "Network trained with the https://github.com/official-stockfish/nnue-pytorch trainer."
     writer = NNUEWriter(model, description, ft_compression="leb128")
