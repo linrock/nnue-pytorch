@@ -33,7 +33,7 @@ def modify_nnue(nnue_filename, spsa_csv_filename):
                 if param_type == "twoW":
                     model.layer_stacks.l2.weight.data[32*int(bucket) + int(idx1), int(idx2)] = float(value) / 64
                 elif param_type == "ftB":
-                    model.input.bias.data[idx] = float(value) / 254
+                    model.input.bias.data[int(idx)] = float(value) / 254
 
     description = "Network trained with the https://github.com/official-stockfish/nnue-pytorch trainer."
     writer = NNUEWriter(model, description, ft_compression="leb128")
