@@ -132,9 +132,9 @@ class NNUEWriter():
     weight = weight.mul(model.quantized_one).round().to(torch.int16)
     psqt_weight = psqt_weight.mul(model.nnue2score * model.weight_scale_out).round().to(torch.int32)
 
-    ascii_hist('ft bias:', bias.numpy())
-    ascii_hist('ft weight:', weight.numpy())
-    ascii_hist('ft psqt weight:', psqt_weight.numpy())
+    # ascii_hist('ft bias:', bias.numpy())
+    # ascii_hist('ft weight:', weight.numpy())
+    # ascii_hist('ft psqt weight:', psqt_weight.numpy())
 
     # Weights stored as [num_features][outputs]
 
@@ -162,9 +162,9 @@ class NNUEWriter():
 
     weight = weight.clamp(-kMaxWeight, kMaxWeight).mul(kWeightScale).round().to(torch.int8)
 
-    ascii_hist('fc bias:', bias.numpy())
-    print("layer has {}/{} clipped weights. Exceeding by {} the maximum {}.".format(clipped, total_elements, clipped_max, kMaxWeight))
-    ascii_hist('fc weight:', weight.numpy())
+    # ascii_hist('fc bias:', bias.numpy())
+    # print("layer has {}/{} clipped weights. Exceeding by {} the maximum {}.".format(clipped, total_elements, clipped_max, kMaxWeight))
+    # ascii_hist('fc weight:', weight.numpy())
 
     # FC inputs are padded to 32 elements by spec.
     num_input = weight.shape[1]
