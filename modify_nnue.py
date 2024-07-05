@@ -19,41 +19,45 @@ def modify_nnue(nnue_filename, spsa_csv_filename):
         reader = NNUEReader(f, feature_set)
         model = reader.model
 
+    num_modified_ft_b = 0
+    num_modified_one_b = 0
     num_modified_two_w = 0
     num_modified_two_b = 0
-    num_modified_ft_b = 0
 
     # twoW[3][0][0],-26,twoW[3][0][1],-36,twoW[3][0][2],-60, ...
     with open(spsa_csv_filename, "r") as f:
         csv_stream = f.read().strip().split(",")
         param_type = None
         for entry in csv_stream:
-            if "twoW" in entry:
-                param_type, bucket, idx1, idx2 = entry.replace("[", " ").replace("]", " ").split()
+            entry_split = entry.replace("[", " ").replace("]", " ").split()
+            match len(entry_split):
+                case 4: param_type, bucket, idx1, idx2 = entry_split
+                case 3: param_type, bucket, idx = entry_split
+                case 2: param_type, idx = entry_split
+                case 1:
+                    value = float(entry[0])
+                    match param_type:
+                        case "ftB":
+                            model.input.bias.data[int(idx)] = value / 254
+                            num_modified_ft_b += 1
 
-            elif "twoB" in entry:
-                param_type, bucket, idx = entry.replace("[", " ").replace("]", " ").split()
+                        case "oneB":
+                            model.layer_stacks.l1.bias.data[int(idx)] = value / (64 * 127)
+                            num_modified_one_b += 1
 
-            elif "ftB" in entry:
-                param_type, idx = entry.replace("[", " ").replace("]", " ").split()
+                        case "twoW":
+                            model.layer_stacks.l2.weight.data[32*int(bucket) + int(idx1), int(idx2)] = value / 64
+                            num_modified_two_w += 1
 
-            else:
-                value = float(entry)
-                match param_type:
-                    case "twoW":
-                        model.layer_stacks.l2.weight.data[32*int(bucket) + int(idx1), int(idx2)] = value / 64
-                        num_modified_two_w += 1
+                        case "twoB":
+                            model.layer_stacks.l2.bias.data[32*int(bucket) + int(idx)] = value / (64 * 127)
+                            num_modified_two_b += 1
 
-                    case "twoB":
-                        model.layer_stacks.l2.bias.data[32*int(bucket) + int(idx)] = value / 8128 
-                        num_modified_two_b += 1
-
-                    case "ftB":
-                        model.input.bias.data[int(idx)] = value / 254
-                        num_modified_ft_b += 1
+                        case "oW":
+                            model.layer_stacks.output.weight.data[32*int(bucket), int(idx)] = value / (600 * 16 / 127)
 
     if num_modified_ft_b > 0:
-        print(f"# modified ft biases:  {num_modified_ft_b}")
+        print(f"# modified FT biases:  {num_modified_ft_b}")
     if num_modified_two_w > 0:
         print(f"# modified L2 weights: {num_modified_two_w}")
     if num_modified_two_b > 0:
