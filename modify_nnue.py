@@ -54,7 +54,7 @@ def modify_nnue(nnue_filename, spsa_csv_filename):
                             num_modified_two_w += 1
 
                         case "twoB":
-                            model.layer_stacks.l2.bias.data[32 * bucket, idx] = value / (64 * 127)
+                            model.layer_stacks.l2.bias.data[32 * bucket + idx] = value / (64 * 127)
                             num_modified_two_b += 1
 
                         case "oW":
