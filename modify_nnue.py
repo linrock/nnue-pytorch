@@ -26,19 +26,20 @@ def modify_nnue(nnue_filename, spsa_csv_filename):
     num_modified_o_w = 0
     num_modified_o_b = 0
 
+    # ftB[0],-120,ftB[1],102,ftB[2],-112, ...
     # twoW[3][0][0],-26,twoW[3][0][1],-36,twoW[3][0][2],-60, ...
     with open(spsa_csv_filename, "r") as f:
         csv_stream = f.read().strip().split(",")
         param_type = None
         for entry in csv_stream:
             entry_split = entry.replace("[", " ").replace("]", " ").split()
-            entry_split[1:] = map(int, entry_split)
+            entry_split[1:] = map(int, entry_split[1:])
             match len(entry_split):
                 case 4: param_type, bucket, idx1, idx2 = entry_split
                 case 3: param_type, bucket, idx = entry_split
                 case 2: param_type, idx = entry_split
                 case 1:
-                    value = float(entry[0])
+                    value = float(entry_split[0])
                     match param_type:
                         case "ftB":
                             model.input.bias.data[idx] = value / 254
@@ -64,12 +65,12 @@ def modify_nnue(nnue_filename, spsa_csv_filename):
                             model.layer_stacks.output.bias.data[idx] = value / (600 * 16)
                             num_modified_o_b += 1
 
-    if num_modified_ft_b > 0:
-        print(f"# modified FT biases:  {num_modified_ft_b}")
-    if num_modified_two_w > 0:
-        print(f"# modified L2 weights: {num_modified_two_w}")
-    if num_modified_two_b > 0:
-        print(f"# modified L2 biases:  {num_modified_two_b}")
+    if num_modified_ft_b > 0:  print(f"# modified FT biases:      {num_modified_ft_b}")
+    if num_modified_one_b > 0: print(f"# modified L1 biases:      {num_modified_one_b}")
+    if num_modified_two_w > 0: print(f"# modified L2 weights:     {num_modified_two_w}")
+    if num_modified_two_b > 0: print(f"# modified L2 biases:      {num_modified_two_b}")
+    if num_modified_o_w > 0:   print(f"# modified output weights: {num_modified_o_w}")
+    if num_modified_o_b > 0:   print(f"# modified output biases:  {num_modified_o_b}")
 
     description = "Network trained with the https://github.com/official-stockfish/nnue-pytorch trainer."
     writer = NNUEWriter(model, description, ft_compression="leb128")
