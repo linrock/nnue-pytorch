@@ -58,7 +58,7 @@ def modify_nnue(nnue_filename, spsa_csv_filename):
                             num_modified_two_b += 1
 
                         case "oW":
-                            model.layer_stacks.output.weight.data[32 * bucket, idx] = value / (600 * 16 / 127)
+                            model.layer_stacks.output.weight.data[bucket, idx] = value / (600 * 16 / 127)
                             num_modified_o_w += 1
 
                         case "oB":

@@ -70,36 +70,40 @@ def print_spsa_params_all(model):
     num_weights = 0
     num_biases = 0
 
+    stack_range = range(8)
+
     # feature transformer biases - 3072
     for j in range(3072):
         value = int(model.input.bias[j] * 254)
         print(f"ftB[{j}],{value},-1024,1024,16,0.0020")
 
     # L1 biases - 8 x 16 = 128
-    i = 0
     for j in range(128):
-        value = int(model.layer_stacks.l1.bias[32 * i + j] * 64 * 127)
-        print(f"oneB[{i}][{j}],{value},-20000,20000,{c_end_biases},0.0020")
+        value = int(model.layer_stacks.l1.bias[j] * 64 * 127)
+        print(f"oneB[{j}],{value},-20000,20000,{c_end_biases},0.0020")
         num_biases += 1
 
     # L2 weights - 8 x 960 = 7680
-    for j in range(32):
-        for k in range(30):
-            value = int(model.layer_stacks.l2.weight[32 * i + j, k] * 64)
-            print(f"twoW[{i}][{j}][{k}],{value},-127,127,{c_end_weights},0.0020")
-            num_weights += 1
+    for i in stack_range:
+        for j in range(32):
+            for k in range(30):
+                value = int(model.layer_stacks.l2.weight[32 * i + j, k] * 64)
+                print(f"twoW[{i}][{j}][{k}],{value},-127,127,{c_end_weights},0.0020")
+                num_weights += 1
 
     # L2 biases - 8 x 32 = 256
-    for j in range(32):
-        value = int(model.layer_stacks.l2.bias[32 * i + j] * 64 * 127)
-        print(f"twoB[{i}][{j}],{value},-20000,20000,{c_end_biases},0.0020")
-        num_weights += 1
+    for i in stack_range:
+        for j in range(32):
+            value = int(model.layer_stacks.l2.bias[32 * i + j] * 64 * 127)
+            print(f"twoB[{i}][{j}],{value},-20000,20000,{c_end_biases},0.0020")
+            num_weights += 1
 
     # output weights - 8 x 32 = 256
-    for j in range(32):
-        value = round(int(model.layer_stacks.output.weight[i, j] * 600 * 16) / 127)
-        print(f"oW[{i}][{j}],{value},-127,127,{c_end_weights},0.0020")
-        num_weights += 1
+    for i in stack_range:
+        for j in range(32):
+            value = round(int(model.layer_stacks.output.weight[i, j] * 600 * 16) / 127)
+            print(f"oW[{i}][{j}],{value},-127,127,{c_end_weights},0.0020")
+            num_weights += 1
 
     # output biases - 8
     for j in range(8):
