@@ -25,6 +25,7 @@ def view_spsa_histogram(spsa_page_url):
 
     values = []
     start_values = []
+    num_changed_values = 0
     for row in params_rows:
         td = row.find_all("td")
         param_name = td[0].text.strip()
@@ -35,6 +36,12 @@ def view_spsa_histogram(spsa_page_url):
         values.append(value)
         start_values.append(start_value)
 
+        if round(value) != start_value:
+            num_changed_values += 1
+
+    print(f"  # changed: {num_changed_values}")
+
+    plt.style.use('dark_background')
     fig, axes = plt.subplots(nrows=1, ncols=2, figsize=(12, 5))
 
     axes[0].hist(start_values, bins=30, alpha=0.75, color='green', edgecolor='black')
