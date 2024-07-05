@@ -104,11 +104,14 @@ def modify_nnue(nnue_filename, spsa_page_url):
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 3:
-        print("Usage: python3 modify_nnue.py <nnue_filename> <spsa_page_url>")
+    if len(sys.argv) != 2:
+        # print("Usage: python3 modify_nnue.py <nnue_filename> <spsa_page_url>")
+        print("Usage: python3 modify_nnue.py <spsa_page_url>")
         sys.exit(0)
 
-    nnue_filename = os.path.abspath(sys.argv[1])
-    spsa_page_url = sys.argv[2]
+    # nnue_filename = os.path.abspath(sys.argv[1])
+    nnue_filename = "nnue/nn-ddcfb9224cdb.nnue"
+    spsa_page_url = sys.argv[1]
+    print(f"Modifying {nnue_filename.split('/')[-1]}")
 
     modify_nnue(nnue_filename, spsa_page_url)
