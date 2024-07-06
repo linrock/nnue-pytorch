@@ -19,12 +19,15 @@ def modify_nnue(nnue_filename, spsa_csv_filename):
         reader = NNUEReader(f, feature_set)
         model = reader.model
 
-    num_modified_ft_b = 0
-    num_modified_one_b = 0
-    num_modified_two_w = 0
-    num_modified_two_b = 0
-    num_modified_o_w = 0
-    num_modified_o_b = 0
+    # [not modified, modified]
+    counts = {
+        "ftB": [0, 0],
+        "oneB": [0, 0],
+        "twoW": [0, 0],
+        "twoB": [0, 0],
+        "oW": [0, 0],
+        "oB": [0, 0],
+    }
 
     # ftB[0],-120,ftB[1],102,ftB[2],-112, ...
     # twoW[3][0][0],-26,twoW[3][0][1],-36,twoW[3][0][2],-60, ...
@@ -42,35 +45,64 @@ def modify_nnue(nnue_filename, spsa_csv_filename):
                     value = float(entry_split[0])
                     match param_type:
                         case "ftB":
-                            model.input.bias.data[idx] = value / 254
-                            num_modified_ft_b += 1
+                            if int(model.input.bias.data[idx] * 254) == int(value):
+                                counts[param_type][0] += 1
+                            else:
+                                model.input.bias.data[idx] = value / 254
+                                counts[param_type][1] += 1
 
                         case "oneB":
-                            model.layer_stacks.l1.bias.data[idx] = value / (64 * 127)
-                            num_modified_one_b += 1
+                            if int(model.layer_stacks.l1.bias.data[idx] * 64 * 127) == int(value):
+                                counts[param_type][0] += 1
+                            else:
+                                model.layer_stacks.l1.bias.data[idx] = value / (64 * 127)
+                                counts[param_type][1] += 1
 
                         case "twoW":
-                            model.layer_stacks.l2.weight.data[32 * bucket + idx1, idx2] = value / 64
-                            num_modified_two_w += 1
+                            if int(model.layer_stacks.l2.weight.data[32 * bucket + idx1, idx2] * 64) == int(value):
+                                counts[param_type][0] += 1
+                            else:
+                                model.layer_stacks.l2.weight.data[32 * bucket + idx1, idx2] = value / 64
+                                counts[param_type][1] += 1
 
                         case "twoB":
-                            model.layer_stacks.l2.bias.data[32 * bucket + idx] = value / (64 * 127)
-                            num_modified_two_b += 1
+                            if int(model.layer_stacks.l2.bias.data[32 * bucket + idx] * (64 * 127)) == int(value):
+                                counts[param_type][0] += 1
+                            else:
+                                model.layer_stacks.l2.bias.data[32 * bucket + idx] = value / (64 * 127)
+                                counts[param_type][1] += 1
 
                         case "oW":
-                            model.layer_stacks.output.weight.data[bucket, idx] = value / (600 * 16 / 127)
-                            num_modified_o_w += 1
+                            if round(int(model.layer_stacks.output.weight.data[bucket, idx] * 600 * 16) / 127) == int(value):
+                                counts[param_type][0] += 1
+                            else:
+                                model.layer_stacks.output.weight.data[bucket, idx] = value / (600 * 16 / 127)
+                                counts[param_type][1] += 1
 
                         case "oB":
-                            model.layer_stacks.output.bias.data[idx] = value / (600 * 16)
-                            num_modified_o_b += 1
+                            if int(model.layer_stacks.output.bias.data[idx] * 600 * 16) == int(value):
+                                counts[param_type][0] += 1
+                            else:
+                                model.layer_stacks.output.bias.data[idx] = value / (600 * 16)
+                                counts[param_type][1] += 1
 
-    if num_modified_ft_b > 0:  print(f"# modified FT biases:      {num_modified_ft_b}")
-    if num_modified_one_b > 0: print(f"# modified L1 biases:      {num_modified_one_b}")
-    if num_modified_two_w > 0: print(f"# modified L2 weights:     {num_modified_two_w}")
-    if num_modified_two_b > 0: print(f"# modified L2 biases:      {num_modified_two_b}")
-    if num_modified_o_w > 0:   print(f"# modified output weights: {num_modified_o_w}")
-    if num_modified_o_b > 0:   print(f"# modified output biases:  {num_modified_o_b}")
+    if any(counts["ftB"]):
+        print(f"# FT biases:      {counts['ftB'][0]} not modified, {counts['ftB'][1]} modified")
+
+    if any(counts["oneB"]):
+        print(f"# L1 biases:      {counts['oneB'][0]} not modified, {counts['oneB'][1]} modified")
+
+    if any(counts["twoW"]):
+        print(f"# L1 weights:     {counts['twoW'][0]} not modified, {counts['twoW'][1]} modified")
+
+    if any(counts["twoB"]):
+        print(f"# L1 biases:      {counts['twoB'][0]} not modified, {counts['twoB'][1]} modified")
+
+    if any(counts["oW"]):
+        print(f"# output weights: {counts['oW'][0]} not modified, {counts['oW'][1]} modified")
+
+    if any(counts["oB"]):
+        print(f"# output biases:  {counts['oB'][0]} not modified, {counts['oB'][1]} modified")
 
     description = "Network trained with the https://github.com/official-stockfish/nnue-pytorch trainer."
     writer = NNUEWriter(model, description, ft_compression="leb128")
