@@ -89,6 +89,79 @@ def print_spsa_owb(model):
     print(f"# biases to tune:  {num_biases}")
 
 
+def print_spsa_params_oneb_twob_owb(model):
+    c_end_weights = 6
+    c_end_biases = 128
+
+    num_weights = 0
+    num_biases = 0
+
+    stack_range = range(8)
+
+    # L1 biases - 8 x 16 = 128
+    for j in range(128):
+        value = int(model.layer_stacks.l1.bias[j] * 64 * 127)
+        print(f"oneB[{j}],{value},-16384,16384,{c_end_biases},0.0020")
+        num_biases += 1
+
+    # L2 biases - 8 x 32 = 256
+    for i in stack_range:
+        for j in range(32):
+            value = int(model.layer_stacks.l2.bias[32 * i + j] * 64 * 127)
+            print(f"twoB[{i}][{j}],{value},-16384,16384,{c_end_biases},0.0020")
+            num_weights += 1
+
+    # output weights - 8 x 32 = 256
+    for i in stack_range:
+        for j in range(32):
+            value = round(int(model.layer_stacks.output.weight[i, j] * 600 * 16) / 127)
+            print(f"oW[{i}][{j}],{value},-127,127,{c_end_weights},0.0020")
+            num_weights += 1
+
+    # output biases - 8
+    for j in range(8):
+        value = int(model.layer_stacks.output.bias[j] * 600 * 16)
+        print(f"oB[{j}],{value},-20000,20000,{c_end_biases},0.0020")
+        num_biases += 1
+
+    print(f"# weights to tune: {num_weights}")
+    print(f"# biases to tune:  {num_biases}")
+
+
+def print_spsa_params_ftb_owb(model):
+    c_end_weights = 6
+    c_end_biases = 128
+
+    num_weights = 0
+    num_biases = 0
+
+    stack_range = range(8)
+
+    # feature transformer biases - 3072
+    for j in range(3072):
+        value = int(model.input.bias[j] * 254)
+        if abs(value) > 250:
+            print(f"ftB[{j}],{value},-1024,1024,16,0.0020")
+            num_biases += 1
+
+    # output weights - 8 x 32 = 256
+    for i in stack_range:
+        for j in range(32):
+            value = round(int(model.layer_stacks.output.weight[i, j] * 600 * 16) / 127)
+            print(f"oW[{i}][{j}],{value},-127,127,{c_end_weights},0.0020")
+            num_weights += 1
+
+    # output biases - 8
+    for j in range(8):
+        value = int(model.layer_stacks.output.bias[j] * 600 * 16)
+        print(f"oB[{j}],{value},-20000,20000,{c_end_biases},0.0020")
+        num_biases += 1
+
+    print(f"# weights to tune: {num_weights}")
+    print(f"# biases to tune:  {num_biases}")
+
+
+
 def print_spsa_params_all(model):
     c_end_weights = 6
     c_end_biases = 128
@@ -150,7 +223,10 @@ def prep_spsa_params(nnue_filename):
     # prep_l2_weights(model)
     # prep_ft_biases(model)
     # print_spsa_params_all(model)
-    print_spsa_owb(model)
+    # print_spsa_owb(model)
+    # print_spsa_params_all(model)
+    # print_spsa_params_oneb_twob_owb(model)
+    print_spsa_params_ftb_owb(model)
 
 
 if __name__ == "__main__":
