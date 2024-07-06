@@ -63,6 +63,32 @@ def prep_l2_weights_stack0(model):
     # print(f"# weights to tune: {num_weights}")
 
 
+def print_spsa_owb(model):
+    c_end_weights = 6
+    c_end_biases = 64
+
+    num_weights = 0
+    num_biases = 0
+
+    stack_range = range(8)
+
+    # output weights - 8 x 32 = 256
+    for i in stack_range:
+        for j in range(32):
+            value = round(int(model.layer_stacks.output.weight[i, j] * 600 * 16) / 127)
+            print(f"oW[{i}][{j}],{value},-127,127,{c_end_weights},0.0020")
+            num_weights += 1
+
+    # output biases - 8
+    for j in range(8):
+        value = int(model.layer_stacks.output.bias[j] * 600 * 16)
+        print(f"oB[{j}],{value},-8192,8192,{c_end_biases},0.0020")
+        num_biases += 1
+
+    print(f"# weights to tune: {num_weights}")
+    print(f"# biases to tune:  {num_biases}")
+
+
 def print_spsa_params_all(model):
     c_end_weights = 6
     c_end_biases = 128
@@ -123,7 +149,8 @@ def prep_spsa_params(nnue_filename):
     # prep_l2_weights_stack0(model)
     # prep_l2_weights(model)
     # prep_ft_biases(model)
-    print_spsa_params_all(model)
+    # print_spsa_params_all(model)
+    print_spsa_owb(model)
 
 
 if __name__ == "__main__":
