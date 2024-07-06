@@ -113,10 +113,10 @@ def modify_nnue(nnue_filename, spsa_csv_filename):
         print(f"# L1 biases:      {counts['oneB'][0]} not modified, {counts['oneB'][1]} modified")
 
     if any(counts["twoW"]):
-        print(f"# L1 weights:     {counts['twoW'][0]} not modified, {counts['twoW'][1]} modified")
+        print(f"# L2 weights:     {counts['twoW'][0]} not modified, {counts['twoW'][1]} modified")
 
     if any(counts["twoB"]):
-        print(f"# L1 biases:      {counts['twoB'][0]} not modified, {counts['twoB'][1]} modified")
+        print(f"# L2 biases:      {counts['twoB'][0]} not modified, {counts['twoB'][1]} modified")
 
     if any(counts["oW"]):
         print(f"# output weights: {counts['oW'][0]} not modified, {counts['oW'][1]} modified")
