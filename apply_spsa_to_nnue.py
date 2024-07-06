@@ -36,56 +36,86 @@ def modify_nnue(nnue_filename, spsa_page_url):
         reader = NNUEReader(f, feature_set)
         model = reader.model
 
-    num_ft_b = 0
-    num_ft_b_modified = 0
-    ft_b_mod_magnitude = 0
-
-    num_l2_w = 0
-    num_l2_w_modified = 0
-    l2_w_mod_magnitude = 0
+    # [not modified, modified]
+    counts = {
+        "ftB": [0, 0],
+        "oneB": [0, 0],
+        "twoW": [0, 0],
+        "twoB": [0, 0],
+        "oW": [0, 0],
+        "oB": [0, 0],
+    }
+    change_magnitudes = {
+        "weights": 0,
+        "biases": 0
+    }
 
     for row in params_rows:
         td = row.find_all("td")
-        param_name = td[0].text.strip()
+
+        entry = td[0].text.strip()
+        entry_split = entry.replace("[", " ").replace("]", " ").split()
+        entry_split[1:] = map(int, entry_split[1:])
+        match len(entry_split):
+            case 4: param_type, bucket, idx1, idx2 = entry_split
+            case 3: param_type, bucket, idx = entry_split
+            case 2: param_type, idx = entry_split
 
         value = float(td[1].text)
         start_value = int(td[2].text)
 
-        if param_name.startswith("twoW"):
-            num_l2_w += 1
-            param_type, bucket, idx1, idx2 = param_name.replace("[", " ").replace("]", " ").split()
-            i1 = 32 * int(bucket) + int(idx1)
-            i2 = int(idx2)
-            if int(model.layer_stacks.l2.weight[i1, i2] * 64) != start_value:
-                print(f"warning: model.layer_stacks.l2.weight[{i1}, {i2}] != {start_value}")
-            if round(value) != start_value:
-                num_l2_w_modified += 1
-                model.layer_stacks.l2.weight.data[i1, i2] = value / 64
-                l2_w_mod_magnitude += abs(round(value) - start_value)
+        if start_value == int(value):
+            counts[param_type][0] += 1
+            continue
 
-        if param_name.startswith("ftB"):
-            num_ft_b += 1
-            param_type, idx = param_name.replace("[", " ").replace("]", " ").split()
-            if int(model.input.bias[int(idx)] * 254) != start_value:
-                print(f"warning: model.input.bias[{int(idx)}] != {start_value}")
-            if round(value) != start_value:
-                num_ft_b_modified += 1
-                model.input.bias.data[int(idx)] = value / 254
-                ft_b_mod_magnitude += abs(round(value) - start_value)
+        match param_type:
+            case "ftB":
+                change_magnitudes["biases"] += abs(int(model.input.bias.data[idx] * 254) - int(value))
+                model.input.bias.data[idx] = value / 254
+                counts[param_type][1] += 1
 
-    if num_ft_b > 0:
-        print( "  FT bias:")
-        print(f"    # params:      {num_ft_b}")
-        print(f"    # modified:    {num_ft_b_modified}")
-        print(f"    mod magnitude: {ft_b_mod_magnitude}")
-        print()
+            case "oneB":
+                change_magnitudes["biases"] += abs(
+                    int(model.layer_stacks.l1.bias.data[idx] * 64 * 127) - int(value)
+                )
+                model.layer_stacks.l1.bias.data[idx] = value / (64 * 127)
+                counts[param_type][1] += 1
 
-    if num_l2_w > 0:
-        print( "  L2 weights:")
-        print(f"    # params:      {num_l2_w}")
-        print(f"    # modified:    {num_l2_w_modified}")
-        print(f"    mod magnitude: {l2_w_mod_magnitude}")
-        print()
+            case "twoW":
+                change_magnitudes["weights"] += abs(
+                    int(model.layer_stacks.l2.weight.data[32 * bucket + idx1, idx2] * 64) - int(value)
+                )
+                model.layer_stacks.l2.weight.data[32 * bucket + idx1, idx2] = value / 64
+                counts[param_type][1] += 1
+
+            case "twoB":
+                change_magnitudes["biases"] += abs(
+                    int(model.layer_stacks.l2.bias.data[32 * bucket + idx] * 64 * 127) - int(value)
+                )
+                model.layer_stacks.l2.bias.data[32 * bucket + idx] = value / (64 * 127)
+                counts[param_type][1] += 1
+
+            case "oW":
+                change_magnitudes["weights"] += abs(
+                    round(int(model.layer_stacks.output.weight.data[bucket, idx] * 600 * 16) / 127) - int(value)
+                )
+                model.layer_stacks.output.weight.data[bucket, idx] = value / (600 * 16 / 127)
+                counts[param_type][1] += 1
+
+            case "oB":
+                change_magnitudes["biases"] += abs(
+                    int(model.layer_stacks.output.bias.data[idx] * 600 * 16) - int(value)
+                )
+                model.layer_stacks.output.bias.data[idx] = value / (600 * 16)
+                counts[param_type][1] += 1
+
+    for key in counts.keys():
+        if any(counts[key]):
+            print(f"  {key}:")
+            print(f"    # params:      {sum(counts[key])}")
+            print(f"    # modified:    {counts[key][1]}")
+   
+    print(f"magnitude of changes: weights {change_magnitudes['weights']}, biases {change_magnitudes['biases']}") 
 
     description = "Network trained with the https://github.com/official-stockfish/nnue-pytorch trainer."
     writer = NNUEWriter(model, description, ft_compression="leb128")
