@@ -142,7 +142,9 @@ if __name__ == "__main__":
         sys.exit(0)
 
     # nnue_filename = os.path.abspath(sys.argv[1])
-    nnue_filename = "nnue/nn-ddcfb9224cdb.nnue"
+    # nnue_filename = "nnue/nn-ddcfb9224cdb.nnue"
+    nnue_filename = "nnue/nn-74f1d263ae9a.nnue"
+
     spsa_page_url = sys.argv[1]
     print(f"Modifying {nnue_filename.split('/')[-1]}")
 
