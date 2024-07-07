@@ -24,6 +24,10 @@ def modify_nnue(nnue_filename, spsa_page_url):
     response = requests.get(spsa_page_url)
     soup = BeautifulSoup(response.text, "html.parser")
 
+    print()
+    base_branch = soup.find("h2").find("span").text.strip().split()[-1]
+    print(f"base branch: {base_branch}")
+
     num_games_played = None
     spsa_status_div = soup.find("div", {"class": "elo-results-top"})
     for row in spsa_status_div.text.strip().split("\n"):
@@ -122,6 +126,7 @@ def modify_nnue(nnue_filename, spsa_page_url):
             print(f"    # modified:    {counts[key][1]}")
    
     print(f"magnitude of changes: weights {change_magnitudes['weights']}, biases {change_magnitudes['biases']}") 
+    print()
 
     description = "Network trained with the https://github.com/official-stockfish/nnue-pytorch trainer."
     writer = NNUEWriter(model, description, ft_compression="leb128")
@@ -137,6 +142,7 @@ def modify_nnue(nnue_filename, spsa_page_url):
               f.write(writer.buf)
 
     info = {
+        "base_branch": base_branch,
         "filepath": os.path.abspath(sha256_nnue_output_filename),
         "comment": f"{len(params_rows)} - {num_games_played}"
     }
@@ -154,6 +160,6 @@ if __name__ == "__main__":
     nnue_filename = "nnue/nn-74f1d263ae9a.nnue"
 
     spsa_page_url = sys.argv[1]
-    print(f"Modifying {nnue_filename.split('/')[-1]}")
+    print(f"Modifying {nnue_filename.split('/')[-1]} ...")
 
     modify_nnue(nnue_filename, spsa_page_url)
