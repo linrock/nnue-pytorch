@@ -32,14 +32,14 @@ def prep_l2_weights(model):
     # print(f"# weights to tune: {num_weights}")
 
 
-def prep_l2_weights(model):
+def print_l2_weights(model):
     c_end = 6
     num_weights = 0
     for i in range(8):
         for j in range(32):
             for k in range(30):
                 value = int(model.layer_stacks.l2.weight[32 * i + j, k] * 64)
-                if abs(value) >= 100:
+                if abs(value) >= 50:
                     print(f"twoW[{i}][{j}][{k}],{value},-127,127,{c_end},0.0020")
                     num_weights += 1
     #     print()
@@ -220,13 +220,13 @@ def prep_spsa_params(nnue_filename):
         reader = NNUEReader(f, feature_set)
         model = reader.model
     # prep_l2_weights_stack0(model)
-    # prep_l2_weights(model)
+    print_l2_weights(model)
     # prep_ft_biases(model)
     # print_spsa_params_all(model)
     # print_spsa_owb(model)
     # print_spsa_params_all(model)
     # print_spsa_params_oneb_twob_owb(model)
-    print_spsa_params_ftb_owb(model)
+    # print_spsa_params_ftb_owb(model)
 
 
 if __name__ == "__main__":
