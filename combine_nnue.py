@@ -17,7 +17,7 @@ def get_sha256_hash(nnue_data):
 
 
 def combine_nnue(apply_nnues):
-    base_nnue = "nn-ddcfb9224cdb.nnue"
+    base_nnue = "nnue/nn-74f1d263ae9a.nnue"
     print(f"base nnue: {base_nnue}")
     with open(base_nnue, "rb") as f:
         base_model = NNUEReader(f, feature_set).model
