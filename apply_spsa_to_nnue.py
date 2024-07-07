@@ -119,12 +119,14 @@ def modify_nnue(nnue_filename, spsa_page_url):
                 model.layer_stacks.output.bias.data[idx] = value / (600 * 16)
                 counts[param_type][1] += 1
 
+    param_types_changed = []
     for key in counts.keys():
         if any(counts[key]):
             print(f"  {key}:")
             print(f"    # params:      {sum(counts[key])}")
             print(f"    # modified:    {counts[key][1]}")
-   
+            param_types_changed.append(key)
+
     print(f"magnitude of changes: weights {change_magnitudes['weights']}, biases {change_magnitudes['biases']}") 
     print()
 
@@ -144,7 +146,7 @@ def modify_nnue(nnue_filename, spsa_page_url):
     info = {
         "base_branch": base_branch,
         "filepath": os.path.abspath(sha256_nnue_output_filename),
-        "comment": f"{len(params_rows)} - {num_games_played}"
+        "comment": f"{len(params_rows)} {" ".join(param_types_changed)} {num_games_played}"
     }
     print(json.dumps(info))
     return sha256_nnue_output_filename
