@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import hashlib
+import json
 import os
 from pathlib import Path
 import sys
@@ -23,10 +24,13 @@ def modify_nnue(nnue_filename, spsa_page_url):
     response = requests.get(spsa_page_url)
     soup = BeautifulSoup(response.text, "html.parser")
 
+    num_games_played = None
     spsa_status_div = soup.find("div", {"class": "elo-results-top"})
     for row in spsa_status_div.text.strip().split("\n"):
         if row.strip():
             print(" ", row.strip())
+            if "games played" in row:
+                num_games_played = f"{int(int(row.split("/")[0]) / 1000)}k"
     print()
 
     spsa_params_table = soup.find_all("table")[1]
@@ -132,6 +136,11 @@ def modify_nnue(nnue_filename, spsa_page_url):
         with open(sha256_nnue_output_filename, "wb") as f:
               f.write(writer.buf)
 
+    info = {
+        "filepath": os.path.abspath(sha256_nnue_output_filename),
+        "comment": f"{len(params_rows)} - {num_games_played}"
+    }
+    print(json.dumps(info))
     return sha256_nnue_output_filename
 
 
@@ -141,7 +150,6 @@ if __name__ == "__main__":
         print("Usage: python3 modify_nnue.py <spsa_page_url>")
         sys.exit(0)
 
-    # nnue_filename = os.path.abspath(sys.argv[1])
     # nnue_filename = "nnue/nn-ddcfb9224cdb.nnue"
     nnue_filename = "nnue/nn-74f1d263ae9a.nnue"
 
