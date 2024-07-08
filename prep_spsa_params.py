@@ -15,7 +15,7 @@ def prep_ft_biases(model):
     num_biases = 0
     for i,value in enumerate(model.input.bias.data[:3072]):
         value_int = int(value * 254)
-        if abs(value_int) > 300:
+        if abs(value_int) > 250:
             print(f"ftB[{i}],{value_int},-1024,1024,{c_end},0.0020")
             num_biases += 1
     return num_biases
@@ -28,12 +28,11 @@ def prep_l2_weights(model):
         for j in range(32):
             for k in range(30):
                 value = int(model.layer_stacks.l2.weight[32 * i + j, k] * 64)
-                if abs(value) >= 42:
+                if abs(value) >= 20:
                     print(f"twoW[{i}][{j}][{k}],{value},-127,127,{c_end},0.0020")
                     num_weights += 1
+    print(f"# weights to tune: {num_weights}")
     return num_weights
-    #     print()
-    # print(f"# weights to tune: {num_weights}")
 
 
 def prep_l2_weights_stack0(model):
@@ -258,11 +257,12 @@ def prep_spsa_params(nnue_filename):
     prep_l2_weights(model)
     # prep_ft_biases(model)
     # print_spsa_params_all(model)
-    # print_spsa_owb(model)
     # print_spsa_params_all(model)
     # print_spsa_params_oneb_twob_owb(model)
     # print_spsa_params_ftb_owb(model)
+    # print_spsa_owb(model)
 
 
 if __name__ == "__main__":
-    prep_spsa_params("nnue/nn-ddcfb9224cdb.nnue")
+    # prep_spsa_params("nnue/nn-ddcfb9224cdb.nnue")
+    prep_spsa_params("nnue/nn-e8bac1c07a5a.nnue")
