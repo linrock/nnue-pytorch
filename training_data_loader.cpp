@@ -878,6 +878,10 @@ std::function<bool(const TrainingDataEntry&)> make_skip_predicate(bool filtered,
             if (e.ply <= early_fen_skipping)
                 return true;
 
+            const int pc = e.pos.piecesBB().count();
+            if (pc < 4)
+                return true;
+
             if (random_fen_skipping && do_skip())
                 return true;
 
@@ -897,7 +901,6 @@ std::function<bool(const TrainingDataEntry&)> make_skip_predicate(bool filtered,
                 }
             }
 
-            const int pc = e.pos.piecesBB().count();
             piece_count_history_all[pc] += 1;
             piece_count_history_all_total += 1;
 
