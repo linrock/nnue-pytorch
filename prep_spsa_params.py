@@ -28,10 +28,10 @@ def prep_l2_weights(model):
         for j in range(32):
             for k in range(30):
                 value = int(model.layer_stacks.l2.weight[32 * i + j, k] * 64)
-                if abs(value) >= 20:
+                if abs(value) >= 10:
                     print(f"twoW[{i}][{j}][{k}],{value},-127,127,{c_end},0.0020")
                     num_weights += 1
-    print(f"# weights to tune: {num_weights}")
+    # print(f"# weights to tune: {num_weights}")
     return num_weights
 
 
@@ -74,8 +74,8 @@ def print_spsa_owb(model):
         print(f"oB[{j}],{value},-8192,8192,{c_end_biases},0.0020")
         num_biases += 1
 
-    print(f"# weights to tune: {num_weights}")
-    print(f"# biases to tune:  {num_biases}")
+    # print(f"# weights to tune: {num_weights}")
+    # print(f"# biases to tune:  {num_biases}")
 
 
 def print_spsa_params_oneb_twob_owb(model):
