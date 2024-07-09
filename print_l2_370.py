@@ -1,11 +1,3 @@
-import hashlib
-import os
-from pathlib import Path
-import sys
-
-from bs4 import BeautifulSoup
-import requests
-
 import features
 from serialize import NNUEReader, NNUEWriter
 

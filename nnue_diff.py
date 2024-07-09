@@ -1,10 +1,7 @@
-import hashlib
-import os
-from pathlib import Path
+from pprint import pprint
 import sys
 
-from bs4 import BeautifulSoup
-import requests
+import numpy as np
 
 import features
 from serialize import NNUEReader, NNUEWriter
@@ -18,6 +15,8 @@ def print_changes(filename1, filename2):
         nnue2 = NNUEReader(f, feature_set).model
 
     num_weights = 0
+    weight_diffs = []
+
     num_biases = 0
 
     stack_range = range(8)
@@ -39,6 +38,7 @@ def print_changes(filename1, filename2):
             num_biases += 1
 
     # L2 weights - 8 x 960 = 7680
+    changes_by_bucket = {}
     for i in stack_range:
         for j in range(32):
             for k in range(30):
@@ -47,6 +47,12 @@ def print_changes(filename1, filename2):
                 if value1 != value2:
                     print(f"twoW[{i}][{j}][{k}] {value1} -> {value2}")
                     num_weights += 1
+                    if not changes_by_bucket.get(i):
+                        changes_by_bucket[i] = { "count": 0, "diffs": [] }
+                    changes_by_bucket[i]["count"] += 1
+                    diff = value2 - value1
+                    changes_by_bucket[i]["diffs"].append(diff)
+                    weight_diffs.append(diff)
 
     # L2 biases - 8 x 32 = 256
     for i in stack_range:
@@ -76,6 +82,13 @@ def print_changes(filename1, filename2):
 
     print(f"{filename1} -> {filename2}")
     print(f"# weights changed: {num_weights}")
+    print(f"  avg: {np.mean(weight_diffs):.3f} +/- {np.std(weight_diffs):.3f}")
+    print(f"  min: {min(weight_diffs)}")
+    print(f"  max: {max(weight_diffs)}")
+    for bucket, stats in changes_by_bucket.items():
+        total_change = sum([abs(d) for d in stats["diffs"]])
+        print(f"{bucket}: {stats['count']} changed, magnitude: {total_change}")
+    # print(changes_by_bucket)
     print(f"# biases changed:  {num_biases}")
 
 
