@@ -82,7 +82,7 @@ def print_changes(filename1, filename2):
 
     print(f"{filename1} -> {filename2}")
     print(f"# weights changed: {num_weights}")
-    print(f"  avg: {np.mean(weight_diffs):.3f} +/- {np.std(weight_diffs):.3f}")
+    print(f"  avg: {np.mean(weight_diffs):.4f} +/- {np.std(weight_diffs):.4f}")
     print(f"  min: {min(weight_diffs)}")
     print(f"  max: {max(weight_diffs)}")
     for bucket, stats in changes_by_bucket.items():
