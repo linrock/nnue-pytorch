@@ -17,7 +17,7 @@ def get_sha256_hash(nnue_data):
 
 
 def combine_nnue(apply_nnues):
-    base_nnue = "nnue/nn-74f1d263ae9a.nnue"
+    base_nnue = "nnue/nn-e8bac1c07a5a.nnue"
     print(f"base nnue: {base_nnue}")
     with open(base_nnue, "rb") as f:
         base_model = NNUEReader(f, feature_set).model
@@ -68,7 +68,7 @@ def combine_nnue(apply_nnues):
                     key = f"{i},{j},{k}" 
                     if key in changed_params[param_type]:
                         pass
-                    elif base_model.layer_stacks.l2.weight.data[32 * i + j, k] == apply_model.layer_stacks.l2.weight[32 * i + j, k]:
+                    elif base_model.layer_stacks.l2.weight[32 * i + j, k] == apply_model.layer_stacks.l2.weight[32 * i + j, k]:
                         counts[param_type][0] += 1
                     else:
                         base_model.layer_stacks.l2.weight.data[32 * i + j, k] = apply_model.layer_stacks.l2.weight[32 * i + j, k]
@@ -82,10 +82,10 @@ def combine_nnue(apply_nnues):
                 key = f"{i},{j}" 
                 if key in changed_params[param_type]:
                     pass
-                elif base_model.layer_stacks.output.weight.data[i, j] == apply_model.layer_stacks.l2.weight[i, j]:
+                elif base_model.layer_stacks.output.weight[i, j] == apply_model.layer_stacks.output.weight[i, j]:
                     counts[param_type][0] += 1
                 else:
-                    base_model.layer_stacks.output.weight.data[i, j] = apply_model.layer_stacks.l2.weight[i, j]
+                    base_model.layer_stacks.output.weight.data[i, j] = apply_model.layer_stacks.output.weight[i, j]
                     counts[param_type][1] += 1
                     changed_params[param_type].add(key)
 
@@ -94,7 +94,7 @@ def combine_nnue(apply_nnues):
         for i in stack_range:
             if i in changed_params[param_type]:
                 pass
-            elif base_model.layer_stacks.output.bias.data[i] == apply_model.layer_stacks.output.bias[i]:
+            elif base_model.layer_stacks.output.bias[i] == apply_model.layer_stacks.output.bias[i]:
                 counts[param_type][0] += 1
             else:
                 base_model.layer_stacks.output.bias.data[i] = apply_model.layer_stacks.output.bias[i]

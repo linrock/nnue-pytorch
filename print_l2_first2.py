@@ -18,16 +18,16 @@ def print_spsa_params(nnue_filename):
         for j in range(32):
             for k in range(30):
                 value = int(model.layer_stacks.l2.weight[32 * i + j, k] * 64)
-                if abs(value) >= 40:
+                if abs(value) >= 30:
                     print(f"twoW[{i}][{j}][{k}],{value},-127,127,{c_end},0.0020")
                     num_weights += 1
 
     # L2 biases - 8 x 32 = 256
-    for i in stack_range:
-        for j in range(32):
-            value = int(model.layer_stacks.l2.bias[32 * i + j] * 64 * 127)
-            print(f"twoB[{i}][{j}],{value},-16384,16384,{c_end_biases},0.0020")
-            num_biases += 1
+    # for i in stack_range:
+    #     for j in range(32):
+    #         value = int(model.layer_stacks.l2.bias[32 * i + j] * 64 * 127)
+    #         print(f"twoB[{i}][{j}],{value},-16384,16384,{c_end_biases},0.0020")
+    #         num_biases += 1
 
     print(f"# weights: {num_weights}")
     print(f"# biases:  {num_biases}")
