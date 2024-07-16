@@ -435,7 +435,11 @@ private:
         is_white[i] = static_cast<float>(e.pos.sideToMove() == Color::White);
         outcome[i] = (e.result + 1.0f) / 2.0f;
         score[i] = e.score;
-        psqt_indices[i] = (e.pos.piecesBB().count() - 1) / 4;
+        // psqt_indices[i] = (e.pos.piecesBB().count() - 1) / 4;
+        psqt_indices[i] = std::max(0, ((
+          e.pos.piecesBB(Piece(PieceType::Pawn, Color::White)) |
+          e.pos.piecesBB(Piece(PieceType::Pawn, Color::Black))
+        ).count() - 1) / 2);
         layer_stack_indices[i] = psqt_indices[i];
         fill_features(FeatureSet<Ts...>{}, i, e);
     }
