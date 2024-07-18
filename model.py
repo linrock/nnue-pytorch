@@ -10,7 +10,7 @@ from feature_transformer import DoubleFeatureTransformerSlice
 torch.set_float32_matmul_precision("high")
 
 # 3 layer fully connected network
-L1 = 128
+L1 = 512
 L2 = 15
 L3 = 32
 
