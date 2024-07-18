@@ -877,16 +877,16 @@ std::function<bool(const TrainingDataEntry&)> make_skip_predicate(bool filtered,
             if (e.ply <= early_fen_skipping)
                 return true;
 
-            if (random_fen_skipping && do_skip())
-                return true;
-
             if (filtered && do_filter())
                 return true;
 
-            if (wld_filtered && do_wld_skip())
+            if (e.pos.simple_eval() < 250 or e.pos.simple_eval() > 2500)
                 return true;
 
-            if (e.pos.simple_eval() < 500 or e.pos.simple_eval() > 1500)
+            if (random_fen_skipping && do_skip())
+                return true;
+
+            if (wld_filtered && do_wld_skip())
                 return true;
 
             constexpr bool do_debug_print = false;
