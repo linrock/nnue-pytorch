@@ -48,12 +48,30 @@ def modify_nnue(nnue_filename, spsa_csv_filename):
                 case 1:
                     value = float(entry_split[0])
                     match param_type:
+                        # TODO double-check
+                        case "ftW":
+                            if int(model.input.weight.data[idx]) == int(value):
+                                counts[param_type][0] += 1
+                            else:
+                                change_magnitudes["weights"] += abs(int(model.input.weight.data[idx]) - int(value))
+                                model.input.bias.data[idx] = value
+                                counts[param_type][1] += 1
+
                         case "ftB":
                             if int(model.input.bias.data[idx] * 254) == int(value):
                                 counts[param_type][0] += 1
                             else:
                                 change_magnitudes["biases"] += abs(int(model.input.bias.data[idx] * 254) - int(value))
                                 model.input.bias.data[idx] = value / 254
+                                counts[param_type][1] += 1
+
+                        # TODO double-check
+                        case "oneW":
+                            if int(model.layer_stacks.l1.weight.data[idx] * 64) == int(value):
+                                counts[param_type][0] += 1
+                            else:
+                                change_magnitudes["weights"] += abs(int(model.layer_stacks.l1.weight.data[idx]) * 64 - int(value))
+                                model.layer_stacks.l1.weight.data[idx] = value / 64
                                 counts[param_type][1] += 1
 
                         case "oneB":
