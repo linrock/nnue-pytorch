@@ -160,7 +160,8 @@ if __name__ == "__main__":
 
     # nnue_filename = "nnue/nn-ddcfb9224cdb.nnue"
     # nnue_filename = "nnue/nn-74f1d263ae9a.nnue"
-    nnue_filename = "nnue/nn-e8bac1c07a5a.nnue"
+    # nnue_filename = "nnue/nn-e8bac1c07a5a.nnue"
+    nnue_filename = "nnue/nn-31337bea577c.nnue"
 
     spsa_page_url = sys.argv[1]
     print(f"Modifying {nnue_filename.split('/')[-1]} ...")
