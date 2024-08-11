@@ -140,13 +140,21 @@ def create_nnue_from_spsa_page(spsa_page_url):
                 counts[param_type][1] += 1
 
     param_types_changed = []
+    num_biases_changed = 0
+    num_weights_changed = 0
     for key in counts.keys():
         if any(counts[key]):
             print(f"  {key}:")
             print(f"    # params:      {sum(counts[key])}")
             print(f"    # modified:    {counts[key][1]}")
             param_types_changed.append(key)
+        if key.endswith("W"):
+            num_weights_changed += counts[key][1]
+        elif key.endswith("B"):
+            num_biases_changed += counts[key][1]
 
+    print(f"# biases changed:   {num_biases_changed}")
+    print(f"# weights changed:  {num_weights_changed}")
     print(f"magnitude of changes: weights {change_magnitudes['weights']}, biases {change_magnitudes['biases']}") 
     print()
 
@@ -163,10 +171,19 @@ def create_nnue_from_spsa_page(spsa_page_url):
         with open(sha256_nnue_output_filename, "wb") as f:
               f.write(writer.buf)
 
+    nnue_base = nnue_filename.split("nn-")[1][:6]
+    change_str = ""
+    if num_weights_changed > 0 and num_biases_changed > 0:
+        change_str = f"{num_weights_changed}W {num_biases_changed}B"
+    elif num_weights_changed > 0:
+        change_str = f"{num_weights_changed}B"
+    elif num_biases_changed > 0:
+        change_str = f"{num_biases_changed}B"
+
     info = {
         "base_branch": base_branch,
         "filepath": os.path.abspath(sha256_nnue_output_filename),
-        "comment": f"{len(params_rows)} {" ".join(param_types_changed)} {num_games_played}"
+        "comment": f"{nnue_base}: {change_str}, {len(params_rows)} {" ".join(param_types_changed)} {num_games_played}"
     }
     print(json.dumps(info))
     return sha256_nnue_output_filename
