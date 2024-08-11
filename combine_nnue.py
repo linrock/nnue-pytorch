@@ -36,7 +36,9 @@ def combine_nnue(apply_nnues):
     }
     changed_params = {
         "ftB": set(),
+        "oneB": set(),
         "twoW": set(),
+        "twoB": set(),
         "oW": set(),
         "oB": set(),
     }
@@ -52,6 +54,7 @@ def combine_nnue(apply_nnues):
         with open(apply_nnue, "rb") as f:
             apply_model = NNUEReader(f, feature_set).model
 
+        # feature transformer biases
         param_type = "ftB"
         for j in range(3072):
             if j in changed_params[param_type]:
@@ -63,7 +66,19 @@ def combine_nnue(apply_nnues):
                 counts[param_type][1] += 1
                 changed_params[param_type].add(j)
      
-        # L2 weights - 8 x 960 = 7680
+        # L1 biases - 128
+        param_type = "oneB"
+        for j in range(128):
+            if j in changed_params[param_type]:
+                pass
+            elif base_model.layer_stacks.l1.bias[j] == apply_model.layer_stacks.l1.bias[j]:
+                counts[param_type][0] += 1
+            else:
+                base_model.layer_stacks.l1.bias[j] = apply_model.layer_stacks.l1.bias[j]
+                counts[param_type][1] += 1
+                changed_params[param_type].add(j)
+
+        # L2 weights - 8 x 960 = 7,680
         param_type = "twoW" 
         for i in stack_range:
             for j in range(32):
@@ -78,7 +93,21 @@ def combine_nnue(apply_nnues):
                         counts[param_type][1] += 1
                         changed_params[param_type].add(key)
 
-        # output weights - 8 x 960 = 7680
+        # L2 biases - 8 x 32 = 256
+        param_type = "twoB"
+        for i in stack_range:
+            for j in range(32):
+                key = f"{i},{j}"
+                if key in changed_params[param_type]:
+                    pass
+                elif base_model.layer_stacks.l2.bias[i, j] == apply_model.layer_stacks.l2.bias[i, j]:
+                    counts[param_type][0] += 1
+                else:
+                    base_model.layer_stacks.l2.bias.data[i, j] = apply_model.layer_stacks.l2.bias[i, j]
+                    counts[param_type][1] += 1
+                    changed_params[param_type].add(key)
+
+        # output weights - 8 x 960 = 7,680
         param_type = "oW" 
         for i in stack_range:
             for j in range(30):
@@ -92,7 +121,7 @@ def combine_nnue(apply_nnues):
                     counts[param_type][1] += 1
                     changed_params[param_type].add(key)
 
-        # L2 weights - 8 x 960 = 7680
+        # output biases - 8
         param_type = "oB" 
         for i in stack_range:
             if i in changed_params[param_type]:
@@ -107,8 +136,14 @@ def combine_nnue(apply_nnues):
         if any(counts["ftB"]):
             print(f"# FT biases:      {counts['ftB'][0]} not modified, {counts['ftB'][1]} modified")
 
+        if any(counts["oneB"]):
+            print(f"# L1 biases:      {counts['oneB'][0]} not modified, {counts['oneB'][1]} modified")
+
         if any(counts["twoW"]):
             print(f"# L2 weights:     {counts['twoW'][0]} not modified, {counts['twoW'][1]} modified")
+
+        if any(counts["twoB"]):
+            print(f"# L2 biases:      {counts['twoB'][0]} not modified, {counts['twoB'][1]} modified")
 
         if any(counts["oW"]):
             print(f"# output weights: {counts['oW'][0]} not modified, {counts['oW'][1]} modified")
