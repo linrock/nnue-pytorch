@@ -21,7 +21,9 @@ def modify_nnue(nnue_filename, spsa_csv_filename):
 
     # [not modified, modified]
     counts = {
+        "ftW": [0, 0],
         "ftB": [0, 0],
+        "oneW": [0, 0],
         "oneB": [0, 0],
         "twoW": [0, 0],
         "twoB": [0, 0],
@@ -48,12 +50,12 @@ def modify_nnue(nnue_filename, spsa_csv_filename):
                 case 1:
                     value = float(entry_split[0])
                     match param_type:
-                        # TODO double-check
+                        # todo: double-check. hard to tune [-1, 0, 1] anyways
                         case "ftW":
-                            if int(model.input.weight.data[idx]) == int(value):
+                            if int(model.input.weight.data[idx] * 254) == int(value):
                                 counts[param_type][0] += 1
                             else:
-                                change_magnitudes["weights"] += abs(int(model.input.weight.data[idx]) - int(value))
+                                change_magnitudes["weights"] += abs(int(model.input.weight.data[idx] * 254) - int(value))
                                 model.input.bias.data[idx] = value
                                 counts[param_type][1] += 1
 
@@ -65,13 +67,14 @@ def modify_nnue(nnue_filename, spsa_csv_filename):
                                 model.input.bias.data[idx] = value / 254
                                 counts[param_type][1] += 1
 
-                        # TODO double-check
                         case "oneW":
-                            if int(model.layer_stacks.l1.weight.data[idx] * 64) == int(value):
+                            if int(model.layer_stacks.l1.weight.data[16 * bucket + idx1, idx2] * 64) == int(value):
                                 counts[param_type][0] += 1
                             else:
-                                change_magnitudes["weights"] += abs(int(model.layer_stacks.l1.weight.data[idx]) * 64 - int(value))
-                                model.layer_stacks.l1.weight.data[idx] = value / 64
+                                change_magnitudes["weights"] += abs(
+                                    int(model.layer_stacks.l1.weight.data[16 * bucket + idx1, idx2]) * 64 - int(value)
+                                )
+                                model.layer_stacks.l1.weight.data[16 * bucket + idx1, idx2] = value / 64
                                 counts[param_type][1] += 1
 
                         case "oneB":
@@ -124,8 +127,14 @@ def modify_nnue(nnue_filename, spsa_csv_filename):
                                 model.layer_stacks.output.bias.data[idx] = value / (600 * 16)
                                 counts[param_type][1] += 1
 
+    if any(counts["ftW"]):
+        print(f"# FT weights:     {counts['ftW'][0]} not modified, {counts['ftW'][1]} modified")
+
     if any(counts["ftB"]):
         print(f"# FT biases:      {counts['ftB'][0]} not modified, {counts['ftB'][1]} modified")
+
+    if any(counts["oneW"]):
+        print(f"# L1 weights:     {counts['oneW'][0]} not modified, {counts['oneW'][1]} modified")
 
     if any(counts["oneB"]):
         print(f"# L1 biases:      {counts['oneB'][0]} not modified, {counts['oneB'][1]} modified")
