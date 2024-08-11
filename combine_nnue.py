@@ -100,10 +100,10 @@ def combine_nnue(apply_nnues):
                 key = f"{i},{j}"
                 if key in changed_params[param_type]:
                     pass
-                elif base_model.layer_stacks.l2.bias[i, j] == apply_model.layer_stacks.l2.bias[i, j]:
+                elif base_model.layer_stacks.l2.bias[i * j] == apply_model.layer_stacks.l2.bias[i * j]:
                     counts[param_type][0] += 1
                 else:
-                    base_model.layer_stacks.l2.bias.data[i, j] = apply_model.layer_stacks.l2.bias[i, j]
+                    base_model.layer_stacks.l2.bias.data[i * j] = apply_model.layer_stacks.l2.bias[i * j]
                     counts[param_type][1] += 1
                     changed_params[param_type].add(key)
 
