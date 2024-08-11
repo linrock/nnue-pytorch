@@ -19,7 +19,7 @@ def get_sha256_hash(nnue_data):
     return h.hexdigest()
 
 
-def modify_nnue(nnue_filename, spsa_page_url):
+def create_nnue_from_spsa_page(spsa_page_url):
     print(spsa_page_url)
     response = requests.get(spsa_page_url)
     soup = BeautifulSoup(response.text, "html.parser")
@@ -37,6 +37,26 @@ def modify_nnue(nnue_filename, spsa_page_url):
                 num_games_played = f"{int(int(row.split("/")[0]) / 1000)}k"
     print()
 
+    test_details_table = soup.find_all("table")[0]
+    new_nets_main = None
+    base_nets_main = None
+    for tr in test_details_table.find_all("tr"):
+        tds = tr.find_all("td")
+        if not tds:
+            continue
+        if tds[0].text.strip() == "new_nets":
+            new_nets_main = tds[1].text.strip().split(",")[0]
+        elif tds[0].text.strip() == "base_nets":
+            base_nets_main = tds[1].text.strip().split(",")[0]
+        if new_nets_main and base_nets_main:
+            if new_nets_main != base_nets_main:
+                print(f"Expected {new_nets_main} to be the same as {base_nets_main}. Exiting")
+                sys.exit(1)
+            else:
+                print(f"base net: {base_nets_main}")
+                break
+
+    nnue_filename = base_nets_main
     spsa_params_table = soup.find_all("table")[1]
     params_rows = spsa_params_table.find_all("tr", class_="spsa-param-row")
     print(f"Found {len(params_rows)} spsa params")
@@ -154,16 +174,14 @@ def modify_nnue(nnue_filename, spsa_page_url):
 
 if __name__ == "__main__":
     if len(sys.argv) != 2:
-        # print("Usage: python3 modify_nnue.py <nnue_filename> <spsa_page_url>")
-        print("Usage: python3 modify_nnue.py <spsa_page_url>")
+        print("Usage: python3 apply_spsa_to_nnue.py <spsa_page_url>")
         sys.exit(0)
 
     # nnue_filename = "nnue/nn-ddcfb9224cdb.nnue"
     # nnue_filename = "nnue/nn-74f1d263ae9a.nnue"
     # nnue_filename = "nnue/nn-e8bac1c07a5a.nnue"
-    nnue_filename = "nnue/nn-31337bea577c.nnue"
+    # nnue_filename = "nnue/nn-31337bea577c.nnue"
+    # print(f"Modifying {nnue_filename.split('/')[-1]} ...")
 
     spsa_page_url = sys.argv[1]
-    print(f"Modifying {nnue_filename.split('/')[-1]} ...")
-
-    modify_nnue(nnue_filename, spsa_page_url)
+    create_nnue_from_spsa_page(spsa_page_url)
