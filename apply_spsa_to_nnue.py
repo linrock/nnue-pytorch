@@ -175,7 +175,7 @@ def create_nnue_from_spsa_page(spsa_page_url):
     changed_param_tokens = []
     if num_weights_changed > 0:
         changed_param_tokens.append(f"{num_weights_changed}W")
-    elif num_biases_changed > 0:
+    if num_biases_changed > 0:
         changed_param_tokens.append(f"{num_biases_changed}B")
     change_str = " ".join(changed_param_tokens)
 
