@@ -172,13 +172,12 @@ def create_nnue_from_spsa_page(spsa_page_url):
               f.write(writer.buf)
 
     nnue_base = nnue_filename.split("nn-")[1][:6]
-    change_str = ""
-    if num_weights_changed > 0 and num_biases_changed > 0:
-        change_str = f"{num_weights_changed}W {num_biases_changed}B"
-    elif num_weights_changed > 0:
-        change_str = f"{num_weights_changed}B"
+    changed_param_tokens = []
+    if num_weights_changed > 0:
+        changed_param_tokens.append(f"{num_weights_changed}W")
     elif num_biases_changed > 0:
-        change_str = f"{num_biases_changed}B"
+        changed_param_tokens.append(f"{num_biases_changed}B")
+    change_str = " ".join(changed_param_tokens)
 
     info = {
         "base_branch": base_branch,
