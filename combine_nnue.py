@@ -17,10 +17,13 @@ def get_sha256_hash(nnue_data):
 
 
 def combine_nnue(apply_nnues):
-    base_nnue = "nnue/nn-e8bac1c07a5a.nnue"
+    # base_nnue = "nnue/nn-31337bea577c.nnue"
+    base_nnue = apply_nnues[0]
     print(f"base nnue: {base_nnue}")
     with open(base_nnue, "rb") as f:
         base_model = NNUEReader(f, feature_set).model
+
+    apply_nnues = apply_nnues[1:]
 
     # [not modified, modified]
     counts = {
@@ -132,7 +135,7 @@ def combine_nnue(apply_nnues):
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
-        print("Usage: python3 combine_nnue.py <nnue_filename>")
+        print("Usage: python3 combine_nnue.py <base_nnue> <nnue2> <nnue3> ...")
         sys.exit(0)
 
     combine_nnue(sys.argv[1:])

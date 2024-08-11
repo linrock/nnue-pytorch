@@ -121,7 +121,7 @@ def print_changes(filename1, filename2, print_spsa_params):
 
 if __name__ == "__main__":
     if len(sys.argv) not in [3, 4]:
-        print("Usage: python3 nnue_diff.py <nnue1> <nnue2> <spsa_params>")
+        print("Usage: python3 nnue_diff.py <nnue1> <nnue2> <bool:print_spsa_params>")
         sys.exit(0)
 
     print_spsa_params = len(sys.argv) == 4
