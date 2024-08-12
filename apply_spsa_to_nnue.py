@@ -4,6 +4,7 @@ import hashlib
 import json
 import os
 from pathlib import Path
+from pprint import pprint
 import sys
 
 from bs4 import BeautifulSoup
@@ -24,10 +25,12 @@ def create_nnue_from_spsa_page(spsa_page_url):
     response = requests.get(spsa_page_url)
     soup = BeautifulSoup(response.text, "html.parser")
 
+    # print some info about the spsa test
     print()
     base_branch = soup.find("h2").find("span").text.strip().split()[-1]
     print(f"base branch: {base_branch}")
 
+    # print progress of this spsa test
     num_games_played = None
     spsa_status_div = soup.find("div", {"class": "elo-results-top"})
     for row in spsa_status_div.text.strip().split("\n"):
@@ -37,6 +40,7 @@ def create_nnue_from_spsa_page(spsa_page_url):
                 num_games_played = f"{int(int(row.split("/")[0]) / 1000)}k"
     print()
 
+    # get the base net. spsa params will be applied to this net
     test_details_table = soup.find_all("table")[0]
     new_nets_main = None
     base_nets_main = None
@@ -56,15 +60,54 @@ def create_nnue_from_spsa_page(spsa_page_url):
                 print(f"base net: {base_nets_main}")
                 break
 
+    # stats on the # of params
     nnue_filename = base_nets_main
     spsa_params_table = soup.find_all("table")[1]
     params_rows = spsa_params_table.find_all("tr", class_="spsa-param-row")
+
+    use_latest_params = False
+    param_history_index = -2
+
+    # collect the latest params from the page
+    params = []
+    for row in params_rows:
+        td = row.find_all("td")
+        var_name = td[0].text.strip()
+        value = float(td[1].text)
+        start_value = int(td[2].text)
+        params.append({
+            "var_name": var_name,
+            "start_value": start_value,
+            "value": value,
+        })
+
+    # also get params from javascript spsaData var
+    spsa_param_map = {}
+    for script in soup.find_all("script"):
+        if "spsaData" in script.text:
+            spsa_data = json.loads(script.text.split("const spsaData = ")[-1].strip().strip(";"))
+    param_names = [param["name"] for param in spsa_data["params"]]
+    param_values = spsa_data["param_history"][param_history_index]
+    param_history_length = len(spsa_data["param_history"])
+
+    print("Latest params")
+    for row in zip(param_names, param_values):
+        spsa_param_map[row[0]] = round(row[1]["theta"])
+    # pprint(spsa_param_map)
+
+    if len(params) != len(spsa_param_map.keys()):
+        print(f"size of params and spsa_param_map don't match: {len(params)} != {len(spsa_param_map.keys())}")
+        sys.exit(1)
+
     print(f"Found {len(params_rows)} spsa params")
 
-    feature_set = features.get_feature_set_from_name("HalfKAv2_hm")
-    with open(nnue_filename, "rb") as f:
-        reader = NNUEReader(f, feature_set)
-        model = reader.model
+    # Use previous params from spsaData
+    if not use_latest_params:
+        print("Chosen params")
+        for i,param in enumerate(params):
+            param["value"] = spsa_param_map[param["var_name"]]
+        # pprint(params)
+        # sys.exit(0)
 
     # [not modified, modified]
     counts = {
@@ -80,10 +123,13 @@ def create_nnue_from_spsa_page(spsa_page_url):
         "biases": 0
     }
 
-    for row in params_rows:
-        td = row.find_all("td")
+    feature_set = features.get_feature_set_from_name("HalfKAv2_hm")
+    with open(nnue_filename, "rb") as f:
+        reader = NNUEReader(f, feature_set)
+        model = reader.model
 
-        entry = td[0].text.strip()
+    for param in params:
+        entry = param["var_name"]
         entry_split = entry.replace("[", " ").replace("]", " ").split()
         entry_split[1:] = map(int, entry_split[1:])
         match len(entry_split):
@@ -91,10 +137,10 @@ def create_nnue_from_spsa_page(spsa_page_url):
             case 3: param_type, bucket, idx = entry_split
             case 2: param_type, idx = entry_split
 
-        value = float(td[1].text)
-        start_value = int(td[2].text)
+        value = param["value"]
+        start_value = param["start_value"]
 
-        if start_value == int(value):
+        if int(start_value) == int(value):
             counts[param_type][0] += 1
             continue
 
@@ -177,6 +223,9 @@ def create_nnue_from_spsa_page(spsa_page_url):
         changed_param_tokens.append(f"{num_weights_changed}W")
     if num_biases_changed > 0:
         changed_param_tokens.append(f"{num_biases_changed}B")
+    if not use_latest_params:
+        changed_param_tokens.append(f"{param_history_index}/{param_history_length}")
+
     change_str = " ".join(changed_param_tokens)
 
     info = {
