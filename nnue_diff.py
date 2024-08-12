@@ -38,7 +38,7 @@ def print_changes(filename1, filename2, print_spsa_params):
             num_biases += 1
 
     # L2 weights - 8 x 960 = 7680
-    changes_by_bucket = {}
+    changes_by_bucket_l2w = {}
     for i in stack_range:
         for j in range(32):
             for k in range(30):
@@ -47,11 +47,11 @@ def print_changes(filename1, filename2, print_spsa_params):
                 if value1 != value2:
                     print(f"twoW[{i}][{j}][{k}] {value1} -> {value2}")
                     num_weights += 1
-                    if not changes_by_bucket.get(i):
-                        changes_by_bucket[i] = { "count": 0, "diffs": [] }
-                    changes_by_bucket[i]["count"] += 1
+                    if not changes_by_bucket_l2w.get(i):
+                        changes_by_bucket_l2w[i] = { "count": 0, "diffs": [] }
+                    changes_by_bucket_l2w[i]["count"] += 1
                     diff = value2 - value1
-                    changes_by_bucket[i]["diffs"].append(diff)
+                    changes_by_bucket_l2w[i]["diffs"].append(diff)
                     weight_diffs.append(diff)
 
     # L2 biases - 8 x 32 = 256
@@ -112,9 +112,9 @@ def print_changes(filename1, filename2, print_spsa_params):
             print(f"  avg: {np.mean(output_weight_diffs):.4f} +/- {np.std(output_weight_diffs):.4f}")
             print(f"  min: {min(output_weight_diffs)}")
             print(f"  max: {max(output_weight_diffs)}")
-        for bucket, stats in changes_by_bucket.items():
+        for bucket, stats in changes_by_bucket_l2w.items():
             total_change = sum([abs(d) for d in stats["diffs"]])
-            print(f"{bucket}: {stats['count']} changed, magnitude: {total_change}")
+            print(f"    {bucket}: {stats['count']} changed, magnitude: {total_change}")
         # print(changes_by_bucket)
         print(f"# biases changed:  {num_biases}")
 

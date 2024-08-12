@@ -66,7 +66,7 @@ def create_nnue_from_spsa_page(spsa_page_url):
     params_rows = spsa_params_table.find_all("tr", class_="spsa-param-row")
 
     use_latest_params = False
-    param_history_index = -2
+    param_history_index = -5
 
     # collect the latest params from the page
     params = []
