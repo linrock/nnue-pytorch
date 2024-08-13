@@ -65,7 +65,7 @@ def create_nnue_from_spsa_page(spsa_page_url):
     spsa_params_table = soup.find_all("table")[1]
     params_rows = spsa_params_table.find_all("tr", class_="spsa-param-row")
 
-    use_latest_params = False
+    use_latest_params = True
     param_history_index = -5
 
     # collect the latest params from the page
@@ -81,28 +81,28 @@ def create_nnue_from_spsa_page(spsa_page_url):
             "value": value,
         })
 
-    # also get params from javascript spsaData var
-    spsa_param_map = {}
-    for script in soup.find_all("script"):
-        if "spsaData" in script.text:
-            spsa_data = json.loads(script.text.split("const spsaData = ")[-1].strip().strip(";"))
-    param_names = [param["name"] for param in spsa_data["params"]]
-    param_values = spsa_data["param_history"][param_history_index]
-    param_history_length = len(spsa_data["param_history"])
-
-    print("Latest params")
-    for row in zip(param_names, param_values):
-        spsa_param_map[row[0]] = round(row[1]["theta"])
-    # pprint(spsa_param_map)
-
-    if len(params) != len(spsa_param_map.keys()):
-        print(f"size of params and spsa_param_map don't match: {len(params)} != {len(spsa_param_map.keys())}")
-        sys.exit(1)
-
     print(f"Found {len(params_rows)} spsa params")
 
-    # Use previous params from spsaData
     if not use_latest_params:
+        # also get params from javascript spsaData var
+        spsa_param_map = {}
+        for script in soup.find_all("script"):
+            if "spsaData" in script.text:
+                spsa_data = json.loads(script.text.split("const spsaData = ")[-1].strip().strip(";"))
+        param_names = [param["name"] for param in spsa_data["params"]]
+        param_values = spsa_data["param_history"][param_history_index]
+        param_history_length = len(spsa_data["param_history"])
+
+        print("Latest params")
+        for row in zip(param_names, param_values):
+            spsa_param_map[row[0]] = round(row[1]["theta"])
+        # pprint(spsa_param_map)
+
+        if len(params) != len(spsa_param_map.keys()):
+            print(f"size of params and spsa_param_map don't match: {len(params)} != {len(spsa_param_map.keys())}")
+            sys.exit(1)
+
+        # Use previous params from spsaData
         print("Chosen params")
         for i,param in enumerate(params):
             param["value"] = spsa_param_map[param["var_name"]]
