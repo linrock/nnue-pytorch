@@ -17,7 +17,6 @@ def get_sha256_hash(nnue_data):
 
 
 def combine_nnue(apply_nnues):
-    # base_nnue = "nnue/nn-31337bea577c.nnue"
     base_nnue = apply_nnues[0]
     print(f"base nnue: {base_nnue}")
     with open(base_nnue, "rb") as f:
@@ -74,7 +73,7 @@ def combine_nnue(apply_nnues):
             elif base_model.layer_stacks.l1.bias[j] == apply_model.layer_stacks.l1.bias[j]:
                 counts[param_type][0] += 1
             else:
-                base_model.layer_stacks.l1.bias[j] = apply_model.layer_stacks.l1.bias[j]
+                base_model.layer_stacks.l1.bias.data[j] = apply_model.layer_stacks.l1.bias[j]
                 counts[param_type][1] += 1
                 changed_params[param_type].add(j)
 
@@ -163,7 +162,7 @@ def combine_nnue(apply_nnues):
     else:
         print(f"saving modified nnue to {sha256_nnue_output_filename}")
         with open(sha256_nnue_output_filename, "wb") as f:
-              f.write(writer.buf)
+            f.write(writer.buf)
 
     return sha256_nnue_output_filename
 
