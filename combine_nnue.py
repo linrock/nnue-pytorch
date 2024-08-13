@@ -22,8 +22,6 @@ def combine_nnue(apply_nnues):
     with open(base_nnue, "rb") as f:
         base_model = NNUEReader(f, feature_set).model
 
-    apply_nnues = apply_nnues[1:]
-
     # [not modified, modified]
     counts = {
         "ftB": [0, 0],
@@ -41,14 +39,14 @@ def combine_nnue(apply_nnues):
         "oW": set(),
         "oB": set(),
     }
-    change_magnitudes = {
-        "weights": 0,
-        "biases": 0
-    }
+    # change_magnitudes = {
+    #     "weights": 0,
+    #     "biases": 0
+    # }
 
     stack_range = range(8)
 
-    for apply_nnue in apply_nnues:
+    for apply_nnue in apply_nnues[1:]:
         print(f"apply nnue: {apply_nnue}")
         with open(apply_nnue, "rb") as f:
             apply_model = NNUEReader(f, feature_set).model
@@ -58,7 +56,7 @@ def combine_nnue(apply_nnues):
         for j in range(3072):
             if j in changed_params[param_type]:
                 pass
-            elif base_model.input.bias.data[j] == apply_model.input.bias[j]:
+            elif base_model.input.bias[j] == apply_model.input.bias[j]:
                 counts[param_type][0] += 1
             else:
                 base_model.input.bias.data[j] = apply_model.input.bias[j]
@@ -106,7 +104,7 @@ def combine_nnue(apply_nnues):
                     counts[param_type][1] += 1
                     changed_params[param_type].add(key)
 
-        # output weights - 8 x 960 = 7,680
+        # output weights - 8 x 32 = 256
         param_type = "oW" 
         for i in stack_range:
             for j in range(30):
@@ -132,22 +130,22 @@ def combine_nnue(apply_nnues):
                 counts[param_type][1] += 1
                 changed_params[param_type].add(i)
 
-        if any(counts["ftB"]):
+        if counts["ftB"][1]:
             print(f"# FT biases:      {counts['ftB'][0]} not modified, {counts['ftB'][1]} modified")
 
-        if any(counts["oneB"]):
+        if counts["oneB"][1]:
             print(f"# L1 biases:      {counts['oneB'][0]} not modified, {counts['oneB'][1]} modified")
 
-        if any(counts["twoW"]):
+        if counts["twoW"][1]:
             print(f"# L2 weights:     {counts['twoW'][0]} not modified, {counts['twoW'][1]} modified")
 
-        if any(counts["twoB"]):
+        if counts["twoB"][1]:
             print(f"# L2 biases:      {counts['twoB'][0]} not modified, {counts['twoB'][1]} modified")
 
-        if any(counts["oW"]):
+        if counts["oW"][1]:
             print(f"# output weights: {counts['oW'][0]} not modified, {counts['oW'][1]} modified")
 
-        if any(counts["oB"]):
+        if counts["oB"][1]:
             print(f"# output biases:  {counts['oB'][0]} not modified, {counts['oB'][1]} modified")
 
     # print(f"magnitude of changes: weights {change_magnitudes['weights']}, biases {change_magnitudes['biases']}")
@@ -168,7 +166,7 @@ def combine_nnue(apply_nnues):
 
 
 if __name__ == "__main__":
-    if len(sys.argv) < 2:
+    if len(sys.argv) < 3:
         print("Usage: python3 combine_nnue.py <base_nnue> <nnue2> <nnue3> ...")
         sys.exit(0)
 
