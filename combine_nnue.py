@@ -44,7 +44,7 @@ def combine_nnue(apply_nnues):
     #     "biases": 0
     # }
 
-    stack_range = range(8)
+    layer_stack_range = range(8)
 
     for apply_nnue in apply_nnues[1:]:
         print(f"apply nnue: {apply_nnue}")
@@ -77,7 +77,7 @@ def combine_nnue(apply_nnues):
 
         # L2 weights - 8 x 960 = 7,680
         param_type = "twoW" 
-        for i in stack_range:
+        for i in layer_stack_range:
             for j in range(32):
                 for k in range(30):
                     key = f"{i},{j},{k}" 
@@ -92,7 +92,7 @@ def combine_nnue(apply_nnues):
 
         # L2 biases - 8 x 32 = 256
         param_type = "twoB"
-        for i in stack_range:
+        for i in layer_stack_range:
             for j in range(32):
                 key = f"{i},{j}"
                 if key in changed_params[param_type]:
@@ -106,7 +106,7 @@ def combine_nnue(apply_nnues):
 
         # output weights - 8 x 32 = 256
         param_type = "oW" 
-        for i in stack_range:
+        for i in layer_stack_range:
             for j in range(30):
                 key = f"{i},{j}" 
                 if key in changed_params[param_type]:
@@ -120,7 +120,7 @@ def combine_nnue(apply_nnues):
 
         # output biases - 8
         param_type = "oB" 
-        for i in stack_range:
+        for i in layer_stack_range:
             if i in changed_params[param_type]:
                 pass
             elif base_model.layer_stacks.output.bias[i] == apply_model.layer_stacks.output.bias[i]:
