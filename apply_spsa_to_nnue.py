@@ -231,7 +231,7 @@ def create_nnue_from_spsa_page(spsa_page_url):
     info = {
         "base_branch": base_branch,
         "filepath": os.path.abspath(sha256_nnue_output_filename),
-        "comment": f"{nnue_base}: {change_str}, {len(params_rows)} {" ".join(param_types_changed)} {num_games_played}"
+        "comment": f"{nnue_base}: {len(params_rows)} {" ".join(param_types_changed)} {num_games_played} ({change_str})"
     }
     print(json.dumps(info))
     return sha256_nnue_output_filename

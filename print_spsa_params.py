@@ -28,7 +28,7 @@ def print_l1_weights(model):
         for j in range(16):
             for k in range(3072):
                 value = int(model.layer_stacks.l1.weight[16 * i + j, k] * 64)
-                if abs(value) >= 50:
+                if abs(value) == 24:
                     print(f"oneW[{i}][{j}][{k}],{value},-127,127,{c_end},0.0020")
                     num_weights += 1
     return num_weights
@@ -248,8 +248,8 @@ def print_spsa_params(nnue_filename):
     with open(nnue_filename, "rb") as f:
         reader = NNUEReader(f, feature_set)
         model = reader.model
-    print_ft_biases(model)
-    # print_l1_weights(model)
+    # print_ft_biases(model)
+    print_l1_weights(model)
     # print_l2_weights(model)
     # print_spsa_params_all(model)
     # print_spsa_params_oneb_twob_owb(model)
