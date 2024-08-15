@@ -29,6 +29,16 @@ def print_changes(filename1, filename2, print_spsa_params):
             print(f"ftB[{j}] {value1} -> {value2}")
             num_biases += 1
 
+    # L1 weights
+    for i in range(8):
+        for j in range(16):
+            for k in range(3072):
+                value1 = int(nnue1.layer_stacks.l1.weight[16 * i + j, k] * 64)
+                value2 = int(nnue2.layer_stacks.l1.weight[16 * i + j, k] * 64)
+                if value1 != value2:
+                    print(f"oneW[{i}][{j}][{k}] {value1} -> {value2}")
+                    num_weights += 1
+
     # L1 biases - 8 x 16 = 128
     for j in range(128):
         value1 = int(nnue1.layer_stacks.l1.bias[j] * 64 * 127)
@@ -116,7 +126,8 @@ def print_changes(filename1, filename2, print_spsa_params):
             total_change = sum([abs(d) for d in stats["diffs"]])
             print(f"    {bucket}: {stats['count']} changed, magnitude: {total_change}")
         # print(changes_by_bucket)
-        print(f"# biases changed:  {num_biases}")
+        print(f"# weights changed:  {num_weights}")
+        print(f"# biases changed:   {num_biases}")
 
 
 if __name__ == "__main__":
