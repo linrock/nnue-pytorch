@@ -112,6 +112,7 @@ def create_nnue_from_spsa_page(spsa_page_url):
     # [not modified, modified]
     counts = {
         "ftB": [0, 0],
+        "oneW": [0, 0],
         "oneB": [0, 0],
         "twoW": [0, 0],
         "twoB": [0, 0],
@@ -148,6 +149,13 @@ def create_nnue_from_spsa_page(spsa_page_url):
             case "ftB":
                 change_magnitudes["biases"] += abs(int(model.input.bias.data[idx] * 254) - int(value))
                 model.input.bias.data[idx] = value / 254
+                counts[param_type][1] += 1
+
+            case "oneW":
+                change_magnitudes["weights"] += abs(
+                    int(model.layer_stacks.l1.weight.data[16 * bucket + idx1, idx2] * 64) - int(value)
+                )
+                model.layer_stacks.l1.weight.data[16 * bucket + idx1, idx2] = value / 64
                 counts[param_type][1] += 1
 
             case "oneB":
