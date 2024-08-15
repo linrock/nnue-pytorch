@@ -10,7 +10,7 @@ import features
 from serialize import NNUEReader, NNUEWriter
 
 
-def prep_ft_biases(model):
+def print_ft_biases(model):
     c_end = 16
     num_biases = 0
     for i,value in enumerate(model.input.bias.data[:3072]):
@@ -21,38 +21,7 @@ def prep_ft_biases(model):
     return num_biases
 
 
-def prep_l2_weights(model):
-    c_end = 6
-    num_weights = 0
-    for i in range(8):
-        for j in range(32):
-            for k in range(30):
-                value = int(model.layer_stacks.l2.weight[32 * i + j, k] * 64)
-                if abs(value) > 50 and abs(value) < 100:
-                    print(f"twoW[{i}][{j}][{k}],{value},-127,127,{c_end},0.0020")
-                    num_weights += 1
-    # print(f"# weights to tune: {num_weights}")
-    return num_weights
-
-
-def prep_l2_weights_stack0(model):
-    c_end = 6
-    num_weights = 0
-    i = 0
-    for j in range(32):
-        for k in range(30):
-            value = int(model.layer_stacks.l2.weight[32 * i + j, k] * 64)
-            print(f"twoW[{i}][{j}][{k}],{value},-127,127,{c_end},0.0020")
-            num_weights += 1
-    # for j in range(32):
-    #     print(f"twoB[{i}][{j}][{k}],{value},-127,127,{c_end},0.0020")
-    #     num_weights += 1
-
-    #     print()
-    # print(f"# weights to tune: {num_weights}")
-
-
-def prep_l1_weights(model):
+def print_l1_weights(model):
     c_end = 6
     num_weights = 0
     for i in range(8):
@@ -61,6 +30,19 @@ def prep_l1_weights(model):
                 value = int(model.layer_stacks.l1.weight[16 * i + j, k] * 64)
                 if abs(value) >= 50:
                     print(f"oneW[{i}][{j}][{k}],{value},-127,127,{c_end},0.0020")
+                    num_weights += 1
+    return num_weights
+
+
+def print_l2_weights(model):
+    c_end = 6
+    num_weights = 0
+    for i in range(8):
+        for j in range(32):
+            for k in range(30):
+                value = int(model.layer_stacks.l2.weight[32 * i + j, k] * 64)
+                if abs(value) > 50 and abs(value) < 100:
+                    print(f"twoW[{i}][{j}][{k}],{value},-127,127,{c_end},0.0020")
                     num_weights += 1
     return num_weights
 
@@ -266,11 +248,9 @@ def print_spsa_params(nnue_filename):
     with open(nnue_filename, "rb") as f:
         reader = NNUEReader(f, feature_set)
         model = reader.model
-    prep_ft_biases(model)
-    # prep_l1_weights(model)
-    # prep_l2_weights_stack0(model)
-    # prep_l2_weights(model)
-    # print_spsa_params_all(model)
+    print_ft_biases(model)
+    # print_l1_weights(model)
+    # print_l2_weights(model)
     # print_spsa_params_all(model)
     # print_spsa_params_oneb_twob_owb(model)
     # print_spsa_params_ftb_owb(model)
@@ -278,8 +258,8 @@ def print_spsa_params(nnue_filename):
 
 
 if __name__ == "__main__":
-    # prep_spsa_params("nnue/nn-ddcfb9224cdb.nnue")
-    # prep_spsa_params("nnue/nn-e8bac1c07a5a.nnue")
+    # print_spsa_params("nnue/nn-ddcfb9224cdb.nnue")
+    # print_spsa_params("nnue/nn-e8bac1c07a5a.nnue")
     # print_spsa_params("nnue/nn-31337bea577c.nnue")
     # print_spsa_params("nn-808259761cca.nnue")
     # print_spsa_params("nn-87caa003fc6a.nnue")
