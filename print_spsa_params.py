@@ -15,7 +15,7 @@ def print_ft_biases(model):
     num_biases = 0
     for i,value in enumerate(model.input.bias.data[:3072]):
         value_int = int(value * 254)
-        if abs(value_int) > 25 and abs(value_int) < 50:
+        if abs(value_int) < 50:
             print(f"ftB[{i}],{value_int},-1024,1024,{c_end},0.0020")
             num_biases += 1
     return num_biases
@@ -74,7 +74,7 @@ def print_spsa_owb(model):
 
 
 def print_spsa_params_oneb_twob_owb(model):
-    c_end_weights = 6
+    c_end_weights = 4
     c_end_biases = 128
 
     num_weights = 0
@@ -108,8 +108,8 @@ def print_spsa_params_oneb_twob_owb(model):
         print(f"oB[{j}],{value},-20000,20000,{c_end_biases},0.0020")
         num_biases += 1
 
-    print(f"# weights to tune: {num_weights}")
-    print(f"# biases to tune:  {num_biases}")
+    # print(f"# weights to tune: {num_weights}")
+    # print(f"# biases to tune:  {num_biases}")
 
 
 def print_spsa_params_ftb_owb(model):
@@ -249,10 +249,10 @@ def print_spsa_params(nnue_filename):
         reader = NNUEReader(f, feature_set)
         model = reader.model
     # print_ft_biases(model)
-    print_l1_weights(model)
+    # print_l1_weights(model)
     # print_l2_weights(model)
     # print_spsa_params_all(model)
-    # print_spsa_params_oneb_twob_owb(model)
+    print_spsa_params_oneb_twob_owb(model)
     # print_spsa_params_ftb_owb(model)
     # print_spsa_owb(model)
 
