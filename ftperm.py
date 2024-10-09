@@ -377,21 +377,21 @@ def filter_fens(fens):
     return filtered_fens
 
 def quantize_ft(model):
-    model.input.weight.data = model.input.weight.data.mul(model.quantized_one).round()
-    model.input.bias.data = model.input.bias.data.mul(model.quantized_one).round()
+    model.input.weight.data = model.input.weight.data.mul(model.ft_quantized_one).round()
+    model.input.bias.data = model.input.bias.data.mul(model.ft_quantized_one).round()
 
 def forward_ft(model, us, them, white_indices, white_values, black_indices, black_values, psqt_indices, layer_stack_indices):
     wp, bp = model.input(white_indices, white_values, black_indices, black_values)
     w, wpsqt = torch.split(wp, M.L1, dim=1)
     b, bpsqt = torch.split(bp, M.L1, dim=1)
     l0_ = (us * torch.cat([w, b], dim=1)) + (them * torch.cat([b, w], dim=1))
-    l0_ = torch.clamp(l0_, 0.0, 127.0)
+    l0_ = torch.clamp(l0_, 0.0, model.ft_quantized_one)
 
     l0_s = torch.split(l0_, M.L1 // 2, dim=1)
     l0_s1 = [l0_s[0] * l0_s[1], l0_s[2] * l0_s[3]]
-    # We multiply by 127/128 because in the quantized network 1.0 is represented by 127
-    # and it's more efficient to divide by 128 instead.
-    l0_ = torch.cat(l0_s1, dim=1) * (1/128)
+    # We multiply by 255/512 because in the quantized network 1.0 is represented by 255
+    # and we want to scale to 1.0=127, but a shift is faster than a division (in inference)
+    l0_ = torch.cat(l0_s1, dim=1) * (1/512)
 
     return l0_.round()
 
