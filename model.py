@@ -93,8 +93,8 @@ class LayerStacks(nn.Module):
     l1c_, l1c_out = l1c_.split(L2, dim=1)
     l1f_, l1f_out = l1f_.split(L2, dim=1)
     l1x_ = l1c_ + l1f_
-    # multiply sqr crelu result by (255/256) to match quantized version
-    l1x_ = torch.clamp(torch.cat([torch.pow(l1x_, 2.0) * (255/256), l1x_], dim=1), 0.0, 1.0)
+    # multiply sqr crelu result by (127/128) to match quantized version
+    l1x_ = torch.clamp(torch.cat([torch.pow(l1x_, 2.0) * (127/128), l1x_], dim=1), 0.0, 1.0)
 
     l2s_ = self.l2(l1x_).reshape((-1, self.count, L3))
     l2c_ = l2s_.view(-1, L3)[indices]
@@ -153,10 +153,12 @@ class NNUE(pl.LightningModule):
     self.nnue2score = 600.0
     self.weight_scale_hidden = 64.0
     self.weight_scale_out = 16.0
-    self.quantized_one = 255.0
+    self.ft_quantized_one = 255.0
+    self.hidden_quantized_one = 127.0
 
-    max_hidden_weight = self.quantized_one / self.weight_scale_hidden
-    max_out_weight = (self.quantized_one * self.quantized_one) / (self.nnue2score * self.weight_scale_out)
+    max_hidden_weight = self.hidden_quantized_one / self.weight_scale_hidden
+    max_out_weight = (self.hidden_quantized_one * self.hidden_quantized_one) / (self.nnue2score * self.weight_scale_out)
+
     self.weight_clipping = [
       {'params' : [self.layer_stacks.l1.weight], 'min_weight' : -max_hidden_weight, 'max_weight' : max_hidden_weight, 'virtual_params' : self.layer_stacks.l1_fact.weight },
       {'params' : [self.layer_stacks.l2.weight], 'min_weight' : -max_hidden_weight, 'max_weight' : max_hidden_weight },
