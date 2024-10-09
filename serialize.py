@@ -123,13 +123,13 @@ class NNUEWriter():
     layer = model.input
 
     bias = layer.bias.data[:M.L1]
-    bias = bias.mul(model.quantized_one).round().to(torch.int16)
+    bias = bias.mul(model.ft_quantized_one).round().to(torch.int16)
 
     all_weight = M.coalesce_ft_weights(model, layer)
     weight = all_weight[:, :M.L1]
     psqt_weight = all_weight[:, M.L1:]
 
-    weight = weight.mul(model.quantized_one).round().to(torch.int16)
+    weight = weight.mul(model.ft_quantized_one).round().to(torch.int16)
     psqt_weight = psqt_weight.mul(model.nnue2score * model.weight_scale_out).round().to(torch.int32)
 
     # ascii_hist('ft bias:', bias.numpy())
@@ -145,12 +145,12 @@ class NNUEWriter():
   def write_fc_layer(self, model, layer, is_output=False):
     # FC layers are stored as int8 weights, and int32 biases
     kWeightScaleHidden = model.weight_scale_hidden
-    kWeightScaleOut = model.nnue2score * model.weight_scale_out / model.quantized_one
+    kWeightScaleOut = model.nnue2score * model.weight_scale_out / model.hidden_quantized_one
     kWeightScale = kWeightScaleOut if is_output else kWeightScaleHidden
     kBiasScaleOut = model.weight_scale_out * model.nnue2score
-    kBiasScaleHidden = model.weight_scale_hidden * model.quantized_one
+    kBiasScaleHidden = model.weight_scale_hidden * model.hidden_quantized_one
     kBiasScale = kBiasScaleOut if is_output else kBiasScaleHidden
-    kMaxWeight = model.quantized_one / kWeightScale
+    kMaxWeight = model.hidden_quantized_one / kWeightScale
 
     bias = layer.bias.data
     bias = bias.mul(kBiasScale).round().to(torch.int32)
@@ -254,10 +254,10 @@ class NNUEReader():
   def read_feature_transformer(self, layer, num_psqt_buckets):
     shape = layer.weight.shape
 
-    bias = self.tensor(np.int16, [layer.bias.shape[0]-num_psqt_buckets]).divide(self.model.quantized_one)
+    bias = self.tensor(np.int16, [layer.bias.shape[0]-num_psqt_buckets]).divide(self.model.ft_quantized_one)
     # weights stored as [num_features][outputs]
     weights = self.tensor(np.int16, [shape[0], shape[1]-num_psqt_buckets])
-    weights = weights.divide(self.model.quantized_one)
+    weights = weights.divide(self.model.ft_quantized_one)
     psqt_weights = self.tensor(np.int32, [shape[0], num_psqt_buckets])
     psqt_weights = psqt_weights.divide(self.model.nnue2score * self.model.weight_scale_out)
 
@@ -266,12 +266,12 @@ class NNUEReader():
 
   def read_fc_layer(self, layer, is_output=False):
     kWeightScaleHidden = self.model.weight_scale_hidden
-    kWeightScaleOut = self.model.nnue2score * self.model.weight_scale_out / self.model.quantized_one
+    kWeightScaleOut = self.model.nnue2score * self.model.weight_scale_out / self.model.hidden_quantized_one
     kWeightScale = kWeightScaleOut if is_output else kWeightScaleHidden
     kBiasScaleOut = self.model.weight_scale_out * self.model.nnue2score
-    kBiasScaleHidden = self.model.weight_scale_hidden * self.model.quantized_one
+    kBiasScaleHidden = self.model.weight_scale_hidden * self.model.hidden_quantized_one
     kBiasScale = kBiasScaleOut if is_output else kBiasScaleHidden
-    kMaxWeight = self.model.quantized_one / kWeightScale
+    kMaxWeight = self.model.hidden_quantized_one / kWeightScale
 
     # FC inputs are padded to 32 elements by spec.
     non_padded_shape = layer.weight.shape
