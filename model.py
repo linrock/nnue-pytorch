@@ -154,7 +154,7 @@ class NNUE(pl.LightningModule):
     self.weight_scale_hidden = 64.0
     self.weight_scale_out = 16.0
     self.ft_quantized_one = 255.0
-    self.quantized_one = 127.0
+    self.hidden_quantized_one = 127.0
 
     max_hidden_weight = self.hidden_quantized_one / self.weight_scale_hidden
     max_out_weight = (self.hidden_quantized_one * self.hidden_quantized_one) / (self.nnue2score * self.weight_scale_out)
