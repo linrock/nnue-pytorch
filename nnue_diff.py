@@ -117,14 +117,17 @@ def print_changes(filename1, filename2, print_spsa_params):
             print(f"  avg: {np.mean(weight_diffs):.4f} +/- {np.std(weight_diffs):.4f}")
             print(f"  min: {min(weight_diffs)}")
             print(f"  max: {max(weight_diffs)}")
+            for bucket, stats in changes_by_bucket_l2w.items():
+                total_change = sum([abs(d) for d in stats["diffs"]])
+                print(f"    {bucket}: {stats['count']} changed, magnitude: {total_change}")
         if num_output_weights:
             print(f"# output weights changed: {num_output_weights}")
             print(f"  avg: {np.mean(output_weight_diffs):.4f} +/- {np.std(output_weight_diffs):.4f}")
             print(f"  min: {min(output_weight_diffs)}")
             print(f"  max: {max(output_weight_diffs)}")
-        for bucket, stats in changes_by_bucket_l2w.items():
-            total_change = sum([abs(d) for d in stats["diffs"]])
-            print(f"    {bucket}: {stats['count']} changed, magnitude: {total_change}")
+            for bucket, stats in output_changes_by_bucket.items():
+                total_change = sum([abs(d) for d in stats["diffs"]])
+                print(f"    {bucket}: {stats['count']} changed, magnitude: {total_change}")
         # print(changes_by_bucket)
         print(f"# weights changed:  {num_weights}")
         print(f"# biases changed:   {num_biases}")
