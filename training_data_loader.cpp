@@ -1,3 +1,4 @@
+#include <cstdlib>
 #include <iostream>
 #include <memory>
 #include <string>
@@ -860,16 +861,6 @@ std::function<bool(const TrainingDataEntry&)> make_skip_predicate(bool filtered,
                 return distrib(prng);
             };
 
-            auto do_skip = [&]() {
-                std::bernoulli_distribution distrib(prob);
-                auto& prng = rng::get_thread_local_rng();
-                return distrib(prng);
-            };
-
-            auto do_filter = [&]() {
-                return (e.isCapturingMove() || e.isInCheck());
-            };
-
             // Allow for predermined filtering without the need to remove positions from the dataset.
             if (e.score == VALUE_NONE)
                 return true;
@@ -877,16 +868,57 @@ std::function<bool(const TrainingDataEntry&)> make_skip_predicate(bool filtered,
             if (e.ply <= early_fen_skipping)
                 return true;
 
-            if (random_fen_skipping && do_skip())
-                return true;
-
-            if (filtered && do_filter())
-                return true;
-
-            if (wld_filtered && do_wld_skip())
+            // skip captures and in-check
+            if (filtered && e.isCapturingMove() || e.isInCheck())
                 return true;
 
             if (e.pos.simple_eval() < 950)
+                return true;
+
+            // randomly skip
+            auto do_skip = [&]() {
+                std::bernoulli_distribution distrib(prob);
+                auto& prng = rng::get_thread_local_rng();
+                return distrib(prng);
+            };
+
+            const int pc = e.pos.piecesBB().count();
+
+            // within the simple eval < 950 distribution:
+            // skip most of 3, 4, 5
+            if (pc == 3)
+                if (rand() % 10 == 0)
+                    return true;
+            else if (pc == 4)
+                if (rand() % 10 == 0)
+                    return true;
+            else if (pc == 5)
+                if (rand() % 10 == 0)
+                    return true;
+
+            // skip some of 6, 7, 8
+            else if (pc == 6)
+                if (rand() % 3 == 0)
+                    return true;
+            else if (pc == 7)
+                if (rand() % 3 == 0)
+                    return true;
+            else if (pc == 8)
+                if (rand() % 3 == 0)
+                    return true;
+
+            // skip less of 9, 10
+            else if (pc == 9)
+                if (rand() % 2 == 0)
+                    return true;
+            else if (pc == 10)
+                if (rand() % 2 == 0)
+                    return true;
+
+            if (random_fen_skipping && do_skip())
+                return true;
+
+            if (wld_filtered && do_wld_skip())
                 return true;
 
             constexpr bool do_debug_print = false;
@@ -899,7 +931,6 @@ std::function<bool(const TrainingDataEntry&)> make_skip_predicate(bool filtered,
                 }
             }
 
-            const int pc = e.pos.piecesBB().count();
             piece_count_history_all[pc] += 1;
             piece_count_history_all_total += 1;
 
