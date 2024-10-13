@@ -884,35 +884,42 @@ std::function<bool(const TrainingDataEntry&)> make_skip_predicate(bool filtered,
 
             const int pc = e.pos.piecesBB().count();
 
+
             // within the simple eval < 950 distribution:
             // skip most of 3, 4, 5
+            std::random_device rd;
+            std::mt19937 generator(rd());
+
+            std::uniform_int_distribution<int> skip_most(0, 9);
             if (pc == 3)
-                if (rand() % 10 == 0)
+                if (skip_most(generator) == 0)
                     return true;
             else if (pc == 4)
-                if (rand() % 10 == 0)
+                if (skip_most(generator) == 0)
                     return true;
             else if (pc == 5)
-                if (rand() % 10 == 0)
+                if (skip_most(generator) == 0)
                     return true;
 
             // skip some of 6, 7, 8
-            else if (pc == 6)
-                if (rand() % 3 == 0)
+            std::uniform_int_distribution<int> skip_some(0, 2);
+            if (pc == 6)
+                if (skip_some(generator) == 0)
                     return true;
             else if (pc == 7)
-                if (rand() % 3 == 0)
+                if (skip_some(generator) == 0)
                     return true;
             else if (pc == 8)
-                if (rand() % 3 == 0)
+                if (skip_some(generator) == 0)
                     return true;
 
             // skip less of 9, 10
-            else if (pc == 9)
-                if (rand() % 2 == 0)
+            std::uniform_int_distribution<int> skip_less(0, 1);
+            if (pc == 9)
+                if (skip_less(generator) == 0)
                     return true;
             else if (pc == 10)
-                if (rand() % 2 == 0)
+                if (skip_less(generator) == 0)
                     return true;
 
             if (random_fen_skipping && do_skip())
