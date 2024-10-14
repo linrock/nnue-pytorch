@@ -389,9 +389,9 @@ def forward_ft(model, us, them, white_indices, white_values, black_indices, blac
 
     l0_s = torch.split(l0_, M.L1 // 2, dim=1)
     l0_s1 = [l0_s[0] * l0_s[1], l0_s[2] * l0_s[3]]
-    # We multiply by 255/512 because in the quantized network 1.0 is represented by 255
+    # We multiply by 511/2048 because in the quantized network 1.0 is represented by 255
     # and we want to scale to 1.0=127, but a shift is faster than a division (in inference)
-    l0_ = torch.cat(l0_s1, dim=1) * (1/512)
+    l0_ = torch.cat(l0_s1, dim=1) * (1/2048)
 
     return l0_.round()
 
