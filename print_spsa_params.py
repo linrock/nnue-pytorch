@@ -41,9 +41,35 @@ def print_l2_weights(model):
         for j in range(32):
             for k in range(30):
                 value = int(model.layer_stacks.l2.weight[32 * i + j, k] * 64)
-                if abs(value) > 50 and abs(value) < 100:
+                if abs(value) > 50:
                     print(f"twoW[{i}][{j}][{k}],{value},-127,127,{c_end},0.0020")
                     num_weights += 1
+    return num_weights
+
+
+def print_l2_weights_and_biases(model):
+    c_end = 6
+    c_end_biases = 128
+
+    num_weights = 0
+    stack_range = range(8)
+
+    # L2 weights
+    for i in range(8):
+        for j in range(32):
+            for k in range(30):
+                value = int(model.layer_stacks.l2.weight[32 * i + j, k] * 64)
+                if abs(value) > 50:
+                    print(f"twoW[{i}][{j}][{k}],{value},-127,127,{c_end},0.0020")
+                    num_weights += 1
+
+    # L2 biases - 8 x 32 = 256
+    for i in stack_range:
+        for j in range(32):
+            value = int(model.layer_stacks.l2.bias[32 * i + j] * 64 * 127)
+            print(f"twoB[{i}][{j}],{value},-16384,16384,{c_end_biases},0.0020")
+            num_weights += 1
+
     return num_weights
 
 
@@ -251,10 +277,11 @@ def print_spsa_params(nnue_filename):
     # print_ft_biases(model)
     # print_l1_weights(model)
     # print_l2_weights(model)
+    print_l2_weights_and_biases(model)
     # print_spsa_params_all(model)
     # print_spsa_params_oneb_twob_owb(model)
     # print_spsa_params_ftb_owb(model)
-    print_spsa_owb(model)
+    # print_spsa_owb(model)
 
 
 if __name__ == "__main__":
@@ -264,4 +291,5 @@ if __name__ == "__main__":
     # print_spsa_params("nn-808259761cca.nnue")
     # print_spsa_params("nn-87caa003fc6a.nnue")
     # print_spsa_params("nn-1111cefa1111.nnue")
-    print_spsa_params("nn-56d3bd295531.nnue")
+    # print_spsa_params("nn-56d3bd295531.nnue")
+    print_spsa_params("nn-f896b7b3aaef.nnue")
