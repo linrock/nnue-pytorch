@@ -49,7 +49,7 @@ def print_l2_weights(model):
 
 def print_spsa_owb(model):
     c_end_weights = 6
-    c_end_biases = 64
+    c_end_biases = 128
 
     num_weights = 0
     num_biases = 0
@@ -74,7 +74,7 @@ def print_spsa_owb(model):
 
 
 def print_spsa_params_oneb_twob_owb(model):
-    c_end_weights = 4
+    c_end_weights = 6
     c_end_biases = 128
 
     num_weights = 0
@@ -252,9 +252,9 @@ def print_spsa_params(nnue_filename):
     # print_l1_weights(model)
     # print_l2_weights(model)
     # print_spsa_params_all(model)
-    print_spsa_params_oneb_twob_owb(model)
+    # print_spsa_params_oneb_twob_owb(model)
     # print_spsa_params_ftb_owb(model)
-    # print_spsa_owb(model)
+    print_spsa_owb(model)
 
 
 if __name__ == "__main__":
@@ -263,4 +263,5 @@ if __name__ == "__main__":
     # print_spsa_params("nnue/nn-31337bea577c.nnue")
     # print_spsa_params("nn-808259761cca.nnue")
     # print_spsa_params("nn-87caa003fc6a.nnue")
-    print_spsa_params("nn-1111cefa1111.nnue")
+    # print_spsa_params("nn-1111cefa1111.nnue")
+    print_spsa_params("nn-56d3bd295531.nnue")
