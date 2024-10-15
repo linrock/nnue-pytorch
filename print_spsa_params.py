@@ -34,6 +34,25 @@ def print_l1_weights(model):
     return num_weights
 
 
+def print_l1_biases_l2_weights(model):
+    c_end_weights = 6
+    c_end_biases = 128
+    stack_range = range(8)
+
+    # L1 biases - 8 x 16 = 128
+    for j in range(128):
+        value = int(model.layer_stacks.l1.bias[j] * 64 * 127)
+        print(f"oneB[{j}],{value},-16384,16384,{c_end_biases},0.0020")
+
+    # L2 weights - 8 x 960 = 7680
+    for i in stack_range:
+        for j in range(32):
+            for k in range(30):
+                value = int(model.layer_stacks.l2.weight[32 * i + j, k] * 64)
+                if value == 0:
+                    print(f"twoW[{i}][{j}][{k}],{value},-127,127,{c_end_weights},0.0020")
+
+
 def print_l2_weights(model):
     c_end = 6
     num_weights = 0
@@ -277,7 +296,8 @@ def print_spsa_params(nnue_filename):
     # print_ft_biases(model)
     # print_l1_weights(model)
     # print_l2_weights(model)
-    print_l2_weights_and_biases(model)
+    # print_l2_weights_and_biases(model)
+    print_l1_biases_l2_weights(model)
     # print_spsa_params_all(model)
     # print_spsa_params_oneb_twob_owb(model)
     # print_spsa_params_ftb_owb(model)
@@ -285,6 +305,9 @@ def print_spsa_params(nnue_filename):
 
 
 if __name__ == "__main__":
+    if len(sys.argv) != 2:
+        print("Usage: python3 print_spsa_params <nnue_filepath>")
+        sys.exit(0)
     # print_spsa_params("nnue/nn-ddcfb9224cdb.nnue")
     # print_spsa_params("nnue/nn-e8bac1c07a5a.nnue")
     # print_spsa_params("nnue/nn-31337bea577c.nnue")
@@ -292,4 +315,6 @@ if __name__ == "__main__":
     # print_spsa_params("nn-87caa003fc6a.nnue")
     # print_spsa_params("nn-1111cefa1111.nnue")
     # print_spsa_params("nn-56d3bd295531.nnue")
-    print_spsa_params("nn-f896b7b3aaef.nnue")
+    # print_spsa_params("nn-f896b7b3aaef.nnue")
+    # print_spsa_params("nn-47221d6142d6.nnue")
+    print_spsa_params(sys.argv[1])
