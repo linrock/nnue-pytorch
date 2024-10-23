@@ -60,11 +60,11 @@ def modify_nnue(nnue_filename, spsa_csv_filename):
                                 counts[param_type][1] += 1
 
                         case "ftB":
-                            if int(model.input.bias.data[idx] * 254) == int(value):
+                            if int(model.input.bias.data[idx] * 255) == int(value):
                                 counts[param_type][0] += 1
                             else:
-                                change_magnitudes["biases"] += abs(int(model.input.bias.data[idx] * 254) - int(value))
-                                model.input.bias.data[idx] = value / 254
+                                change_magnitudes["biases"] += abs(int(model.input.bias.data[idx] * 255) - int(value))
+                                model.input.bias.data[idx] = value / 255
                                 counts[param_type][1] += 1
 
                         case "oneW":

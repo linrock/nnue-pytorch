@@ -22,11 +22,11 @@ class NnueSpsaParamPrinter(object):
 
     # FT biases - 3072
     def print_ft_biases(self, condition=lambda value: True):
-        c_end = 16
+        c_end = 12
         for i,value in enumerate(self.model.input.bias.data[:3072]):
             value_int = int(value * 255)
             if condition(value_int):
-                print(f"ftB[{i}],{value_int},-1024,1024,{c_end},0.0020")
+                print(f"ftB[{i}],{value_int},-255,255,{c_end},0.0020")
 
     # FT weights - 8 x 16 x 3072 = 393,216
     def print_l1_weights(self, condition=lambda value: True):
@@ -79,13 +79,13 @@ if __name__ == "__main__":
         sys.exit(0)
 
     n = NnueSpsaParamPrinter(sys.argv[1])
-    # print_ft_biases(model, lambda value: abs(value) < 50)
+    n.print_ft_biases(lambda value: abs(value) < 50)
 
-    # print_l1_weights(model, lambda value: abs(value) == 0)
-    # print_l1_biases(model)
+    # print_l1_weights(lambda value: abs(value) == 0)
+    # print_l1_biases()
 
-    # print_l2_weights(model, lambda value: abs(value) > 50)
-    # print_l2_biases(model)
+    # print_l2_weights(lambda value: abs(value) > 50)
+    # print_l2_biases()
 
-    n.print_output_weights()
-    n.print_output_biases()
+    # n.print_output_weights()
+    # n.print_output_biases()
