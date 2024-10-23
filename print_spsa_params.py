@@ -1,13 +1,7 @@
-import hashlib
-import os
-from pathlib import Path
 import sys
 
-from bs4 import BeautifulSoup
-import requests
-
 import features
-from serialize import NNUEReader, NNUEWriter
+from serialize import NNUEReader
 
 
 class NnueSpsaParamPrinter(object):
@@ -45,7 +39,7 @@ class NnueSpsaParamPrinter(object):
 
     # L2 weights - 8 x 32 x 30 = 7680
     def print_l2_weights(self, condition=lambda value: True):
-        for i in self.stage_range:
+        for i in self.stack_range:
             for j in range(32):
                 for k in range(30):
                     value = int(self.model.layer_stacks.l2.weight[32 * i + j, k] * 64)
@@ -66,7 +60,7 @@ class NnueSpsaParamPrinter(object):
                 value = round(int(self.model.layer_stacks.output.weight[i, j] * 600 * 16) / 127)
                 print(f"oW[{i}][{j}],{value},-127,127,{self.c_end_weights},0.0020")
 
-    # output biases - 8
+    # Output biases - 8
     def print_output_biases(self):
         for j in self.stack_range:
             value = int(self.model.layer_stacks.output.bias[j] * 600 * 16)
@@ -79,13 +73,13 @@ if __name__ == "__main__":
         sys.exit(0)
 
     n = NnueSpsaParamPrinter(sys.argv[1])
-    n.print_ft_biases(lambda value: abs(value) < 50)
+    # n.print_ft_biases(lambda value: abs(value) < 50)
 
-    # print_l1_weights(lambda value: abs(value) == 0)
-    # print_l1_biases()
+    # n.print_l1_weights(lambda value: abs(value) == 0)
+    # n.print_l1_biases()
 
-    # print_l2_weights(lambda value: abs(value) > 50)
-    # print_l2_biases()
+    # n.print_l2_weights(lambda value: abs(value) > 50)
+    # n.print_l2_biases()
 
-    # n.print_output_weights()
-    # n.print_output_biases()
+    n.print_output_weights()
+    n.print_output_biases()
