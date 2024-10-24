@@ -829,11 +829,11 @@ std::function<bool(const TrainingDataEntry&)> make_skip_predicate(bool filtered,
             static constexpr int VALUE_NONE = 32002;
 
             static constexpr double desired_piece_count_weights[33] = {
-                1.000000,
-                1.121094, 1.234375, 1.339844, 1.437500, 1.527344, 1.609375, 1.683594, 1.750000,
-                1.808594, 1.859375, 1.902344, 1.937500, 1.964844, 1.984375, 1.996094, 2.000000,
-                1.996094, 1.984375, 1.964844, 1.937500, 1.902344, 1.859375, 1.808594, 1.750000,
-                1.683594, 1.609375, 1.527344, 1.437500, 1.339844, 1.234375, 1.121094, 1.000000
+                0,
+                0, 1, 1, 1, 1, 1, 1, 1,
+                1, 1, 1, 1, 1, 1, 1, 1,
+                1, 1, 1, 1, 1, 1, 1, 1,
+                1, 1, 1, 1, 1, 1, 1, 1
             };
 
             static constexpr double desired_piece_count_weights_total = [](){
