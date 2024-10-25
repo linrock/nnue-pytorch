@@ -42,26 +42,26 @@ def create_nnue_from_spsa_page(spsa_page_url):
 
     # get the base net. spsa params will be applied to this net
     test_details_table = soup.find_all("table")[0]
-    new_nets_main = None
-    base_nets_main = None
+    new_nets_small = None
+    base_nets_small = None
     for tr in test_details_table.find_all("tr"):
         tds = tr.find_all("td")
         if not tds:
             continue
         if tds[0].text.strip() == "new_nets":
-            new_nets_main = tds[1].text.strip().split(",")[0]
+            new_nets_small = tds[1].text.strip().split(",")[-1].strip()
         elif tds[0].text.strip() == "base_nets":
-            base_nets_main = tds[1].text.strip().split(",")[0]
-        if new_nets_main and base_nets_main:
-            if new_nets_main != base_nets_main:
-                print(f"Expected {new_nets_main} to be the same as {base_nets_main}. Exiting")
+            base_nets_small = tds[1].text.strip().split(",")[-1].strip()
+        if new_nets_small and base_nets_small:
+            if new_nets_small != base_nets_small:
+                print(f"Expected {new_nets_small} to be the same as {base_nets_small}. Exiting")
                 sys.exit(1)
             else:
-                print(f"base net: {base_nets_main}")
+                print(f"base net: {base_nets_small}")
                 break
 
     # stats on the # of params
-    nnue_filename = base_nets_main
+    nnue_filename = base_nets_small
     spsa_params_table = soup.find_all("table")[1]
     params_rows = spsa_params_table.find_all("tr", class_="spsa-param-row")
 
