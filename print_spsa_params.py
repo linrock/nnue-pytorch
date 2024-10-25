@@ -15,19 +15,19 @@ class NnueSpsaParamPrinter(object):
         self.c_end_biases = 128
         self.stack_range = range(8)
 
-    # FT biases - 3072
+    # FT biases - 128
     def print_ft_biases(self, condition=lambda value: True):
         c_end = 16
-        for i,value in enumerate(self.model.input.bias.data[:3072]):
+        for i,value in enumerate(self.model.input.bias.data[:128]):
             value_int = int(value * 255)
             if condition(value_int):
                 print(f"ftB[{i}],{value_int},-1024,1024,{c_end},0.0020")
 
-    # FT weights - 8 x 16 x 3072 = 393,216
+    # FT weights - 8 x 16 x 128 = 393,216
     def print_l1_weights(self, condition=lambda value: True):
         for i in self.stack_range:
             for j in range(16):
-                for k in range(3072):
+                for k in range(128):
                     value = int(self.model.layer_stacks.l1.weight[16 * i + j, k] * 64)
                     if condition(value):
                         print(f"oneW[{i}][{j}][{k}],{value},-127,127,{self.c_end_weights},0.0020")
@@ -70,11 +70,11 @@ class NnueSpsaParamPrinter(object):
 
 if __name__ == "__main__":
     if len(sys.argv) != 2:
-        print("Usage: python3 print_spsa_params <nnue_filepath>")
+        print("Usage: python3 print_spsa_params.py <nnue_filepath>")
         sys.exit(0)
 
     n = NnueSpsaParamPrinter(sys.argv[1])
-    n.print_ft_biases(lambda value: abs(value) < 30)
+    # n.print_ft_biases(lambda value: abs(value) < 30)
 
     # n.print_l1_weights(lambda value: abs(value) == 0)
     # n.print_l1_biases()
@@ -83,5 +83,5 @@ if __name__ == "__main__":
     # n.print_l2_weights(lambda value: random.randint(0, 12) == 0)
     # n.print_l2_biases()
 
-    # n.print_output_weights()
-    # n.print_output_biases()
+    n.print_output_weights()
+    n.print_output_biases()
