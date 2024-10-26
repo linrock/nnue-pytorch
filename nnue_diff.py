@@ -21,8 +21,8 @@ def print_changes(filename1, filename2, print_spsa_params):
 
     stack_range = range(8)
 
-    # feature transformer biases - 3072
-    for j in range(3072):
+    # feature transformer biases - 128
+    for j in range(128):
         value1 = int(nnue1.input.bias[j] * 254)
         value2 = int(nnue2.input.bias[j] * 254)
         if value1 != value2:
@@ -32,7 +32,7 @@ def print_changes(filename1, filename2, print_spsa_params):
     # L1 weights
     for i in range(8):
         for j in range(16):
-            for k in range(3072):
+            for k in range(128):
                 value1 = int(nnue1.layer_stacks.l1.weight[16 * i + j, k] * 64)
                 value2 = int(nnue2.layer_stacks.l1.weight[16 * i + j, k] * 64)
                 if value1 != value2:
