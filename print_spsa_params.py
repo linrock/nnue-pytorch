@@ -74,13 +74,14 @@ if __name__ == "__main__":
         sys.exit(0)
 
     n = NnueSpsaParamPrinter(sys.argv[1])
-    n.print_ft_biases(lambda value: abs(value) < 30)
+    # n.print_ft_biases(lambda value: abs(value) < 30)
 
     # n.print_l1_weights(lambda value: abs(value) == 0)
     # n.print_l1_biases()
 
     # random.seed(0)
     # n.print_l2_weights(lambda value: random.randint(0, 12) == 0)
+    n.print_l2_weights(lambda value: abs(value) >= 50)
     # n.print_l2_biases()
 
     # n.print_output_weights()

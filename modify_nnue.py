@@ -52,11 +52,11 @@ def modify_nnue(nnue_filename, spsa_csv_filename):
                     match param_type:
                         # todo: double-check. hard to tune [-1, 0, 1] anyways
                         case "ftW":
-                            if int(model.input.weight.data[idx] * 254) == int(value):
+                            if int(model.input.weight.data[idx] * 255) == int(value):
                                 counts[param_type][0] += 1
                             else:
-                                change_magnitudes["weights"] += abs(int(model.input.weight.data[idx] * 254) - int(value))
-                                model.input.bias.data[idx] = value
+                                change_magnitudes["weights"] += abs(int(model.input.weight.data[idx] * 255) - int(value))
+                                model.input.weight.data[idx] = value
                                 counts[param_type][1] += 1
 
                         case "ftB":
