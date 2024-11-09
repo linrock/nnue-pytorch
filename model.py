@@ -12,7 +12,7 @@ import torch._dynamo
 torch._dynamo.config.suppress_errors = True
 
 
-torch.set_float32_matmul_precision("high")
+# torch.set_float32_matmul_precision("high")
 
 # 3 layer fully connected network
 L1 = 3072
@@ -361,6 +361,6 @@ class NNUE(pl.LightningModule):
     # Gradient localisation appears slightly harmful.
     # optimizer = ranger.Ranger(train_params, betas=(.9, 0.999), eps=1.0e-7, gc_loc=False, use_gc=False)
     # optimizer = ADOPT(train_params, betas=(.9, 0.999), eps=1.0e-7)
-    optimizer = ADOPT(train_params)
+    optimizer = ADOPT(train_params, decoupled=True)
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=1, gamma=self.gamma)
     return [optimizer], [scheduler]
