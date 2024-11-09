@@ -80,10 +80,11 @@ if __name__ == "__main__":
     # p.l1_biases()
 
     # random.seed(0)
+    p.l2_weights(lambda value: abs(value) >= 24 and abs(value) <= 30)
     # p.l2_weights(lambda value: abs(value) >= 30 and abs(value) <= 45)
     # p.l2_weights(lambda value: random.randint(0, 12) == 0)
     # p.l2_weights(lambda value: abs(value) >= 50)
-    p.l2_biases()
+    # p.l2_biases()
 
-    p.output_weights()
-    p.output_biases()
+    # p.output_weights()
+    # p.output_biases()
