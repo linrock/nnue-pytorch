@@ -153,7 +153,7 @@ class NNUE(pl.LightningModule):
     self.nnue2score = 600.0
     self.weight_scale_hidden = 64.0
     self.weight_scale_out = 16.0
-    self.ft_quantized_one = 255.0
+    self.ft_quantized_one = 511.0
     self.hidden_quantized_one = 127.0
 
     max_hidden_weight = self.hidden_quantized_one / self.weight_scale_hidden
@@ -278,9 +278,9 @@ class NNUE(pl.LightningModule):
 
     l0_s = torch.split(l0_, L1 // 2, dim=1)
     l0_s1 = [l0_s[0] * l0_s[1], l0_s[2] * l0_s[3]]
-    # We multiply by 255/256 because in the quantized network 1.0 is represented by 255
-    # and it's more efficient to divide by 256 instead.
-    l0_ = torch.cat(l0_s1, dim=1) * (255/256)
+    # We multiply by 511/512 because in the quantized network 1.0 is represented by 511
+    # and it's more efficient to divide by 512 instead.
+    l0_ = torch.cat(l0_s1, dim=1) * (511/512)
 
     psqt_indices_unsq = psqt_indices.unsqueeze(dim=1)
     wpsqt = wpsqt.gather(1, psqt_indices_unsq)
