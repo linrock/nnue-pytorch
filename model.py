@@ -7,6 +7,9 @@ import copy
 from feature_transformer import DoubleFeatureTransformerSlice
 
 
+import torch._dynamo
+torch._dynamo.config.suppress_errors = True
+
 torch.set_float32_matmul_precision("high")
 
 # 3 layer fully connected network
