@@ -364,3 +364,7 @@ class NNUE(pl.LightningModule):
     scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer, lr_lambda=fn)
 
     return [optimizer], [scheduler]
+
+
+torch.serialization.add_safe_globals([NNUE])
+torch.serialization.add_safe_globals([LayerStacks])
