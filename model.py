@@ -359,3 +359,7 @@ class NNUE(pl.LightningModule):
     optimizer = ranger.Ranger(train_params, betas=(.9, 0.999), eps=1.0e-7, gc_loc=False, use_gc=False)
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=1, gamma=self.gamma)
     return [optimizer], [scheduler]
+
+
+torch.serialization.add_safe_globals([NNUE])
+torch.serialization.add_safe_globals([LayerStacks])

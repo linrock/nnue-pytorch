@@ -603,3 +603,6 @@ if __name__ == '__main__':
 
     test()
     bench()
+
+
+torch.serialization.add_safe_globals([DoubleFeatureTransformerSlice])
