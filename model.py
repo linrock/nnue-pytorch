@@ -359,8 +359,6 @@ class NNUE(pl.LightningModule):
     ]
     # Increasing the eps leads to less saturated nets with a few dead neurons.
     # Gradient localisation appears slightly harmful.
-    # optimizer = ranger.Ranger(train_params, betas=(.9, 0.999), eps=1.0e-7, gc_loc=False, use_gc=False)
-
     # epoch_size: 100,000,000
     # batch_size: 16,384
     optimizer = ranger21.Ranger21(train_params,
@@ -373,5 +371,8 @@ class NNUE(pl.LightningModule):
       softplus=False,
       pnm_momentum_factor=0.0)
 
-    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=1, gamma=self.gamma)
+    # linear decay to 0 at max_epoch
+    fn = lambda step: 1 - step / self.max_epoch
+    scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer, lr_lambda=fn)
+
     return [optimizer], [scheduler]
